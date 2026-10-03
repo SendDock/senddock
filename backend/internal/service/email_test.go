@@ -34,39 +34,61 @@ func TestIsPublicURLReachable(t *testing.T) {
 	}
 }
 
+// The footer is added at send time to both renditions of the message: a text part without
+// the unsubscribe link the HTML carries would be a compliance gap, so the pair is checked
+// together.
 func TestEnsureUnsubscribeFooter(t *testing.T) {
-	t.Run("no placeholder appends footer", func(t *testing.T) {
-		body := "<p>Hello</p>"
-		got := ensureUnsubscribeFooter(body)
-		if !strings.Contains(got, "{{unsubscribe_url}}") {
-			t.Error("expected footer with unsubscribe placeholder appended")
+	t.Run("no placeholder appends footer to both parts", func(t *testing.T) {
+		got := ensureUnsubscribeFooter(bodyParts{html: "<p>Hello</p>", text: "Hello"})
+
+		if !strings.Contains(got.html, "{{unsubscribe_url}}") {
+			t.Error("expected footer with unsubscribe placeholder appended to the html part")
 		}
-		if !strings.HasPrefix(got, body) {
+		if !strings.HasPrefix(got.html, "<p>Hello</p>") {
 			t.Error("original body should still be at the start")
+		}
+		if !strings.Contains(got.text, "Unsubscribe: {{unsubscribe_url}}") {
+			t.Errorf("text part gained no unsubscribe link: %q", got.text)
+		}
+		if !strings.HasPrefix(got.text, "Hello") {
+			t.Errorf("text part should keep its content first: %q", got.text)
 		}
 	})
 
 	t.Run("placeholder present is left alone", func(t *testing.T) {
-		body := `<p>Hi <a href="{{unsubscribe_url}}">unsub</a></p>`
-		got := ensureUnsubscribeFooter(body)
-		if got != body {
-			t.Errorf("body with placeholder should not be modified, got %q", got)
+		original := bodyParts{
+			html: `<p>Hi <a href="{{unsubscribe_url}}">unsub</a></p>`,
+			text: `Hi unsub ({{unsubscribe_url}})`,
+		}
+		if got := ensureUnsubscribeFooter(original); got != original {
+			t.Errorf("parts with a placeholder should not be modified, got %+v", got)
 		}
 	})
 
 	t.Run("inserts before closing body tag", func(t *testing.T) {
-		body := "<html><body><p>Hi</p></body></html>"
-		got := ensureUnsubscribeFooter(body)
-		if !strings.Contains(got, "{{unsubscribe_url}}") {
-			t.Errorf("expected unsubscribe placeholder in result, got %q", got)
+		got := ensureUnsubscribeFooter(bodyParts{html: "<html><body><p>Hi</p></body></html>", text: "Hi"})
+
+		if !strings.Contains(got.html, "{{unsubscribe_url}}") {
+			t.Errorf("expected unsubscribe placeholder in result, got %q", got.html)
 		}
-		if !strings.HasSuffix(got, "</body></html>") {
-			t.Errorf("closing tags should remain at the end, got %q", got)
+		if !strings.HasSuffix(got.html, "</body></html>") {
+			t.Errorf("closing tags should remain at the end, got %q", got.html)
 		}
-		footerStart := strings.Index(got, "<hr")
-		bodyClose := strings.LastIndex(got, "</body>")
+		footerStart := strings.Index(got.html, "<hr")
+		bodyClose := strings.LastIndex(got.html, "</body>")
 		if footerStart == -1 || footerStart > bodyClose {
 			t.Errorf("footer must be inserted before </body>, footerStart=%d bodyClose=%d", footerStart, bodyClose)
+		}
+	})
+
+	t.Run("a caller with no text part is not given one", func(t *testing.T) {
+		got := ensureUnsubscribeFooter(bodyParts{html: "<p>Hi</p>"})
+
+		if got.text != "" {
+			t.Errorf("text part = %q, want it left empty", got.text)
+		}
+		if !strings.Contains(got.html, "{{unsubscribe_url}}") {
+			t.Error("the html part should still gain the footer")
 		}
 	})
 }

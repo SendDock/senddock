@@ -3,10 +3,12 @@ package service
 import (
 	"context"
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/tls"
 	"database/sql"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -31,6 +33,18 @@ import (
 
 const unsubscribeFooter = `<hr style="margin:32px 0 16px;border:none;border-top:1px solid #e5e5e5"><p style="font-size:12px;color:#888;text-align:center;font-family:Arial,sans-serif;line-height:1.5">Don't want to receive these emails? <a href="{{unsubscribe_url}}" style="color:#888;text-decoration:underline">Unsubscribe</a>.</p>`
 
+// unsubscribeFooterText is the plain-text counterpart of the footer above, so a message
+// that gained an unsubscribe link in its HTML does not lose it in its text part.
+const unsubscribeFooterText = "\n\nDon't want to receive these emails? Unsubscribe: {{unsubscribe_url}}"
+
+// bodyParts is one message's two renditions of the same content. They are produced
+// together and always travel together, so they are paired here rather than passed around
+// as two adjacent strings that could be swapped.
+type bodyParts struct {
+	html string
+	text string
+}
+
 func IsPublicURLReachable(rawURL string) bool {
 	if rawURL == "" {
 		return false
@@ -49,14 +63,24 @@ func IsPublicURLReachable(rawURL string) bool {
 	return true
 }
 
-func ensureUnsubscribeFooter(body string) string {
-	if strings.Contains(body, "{{unsubscribe_url}}") {
-		return body
+// ensureUnsubscribeFooter adds the compliance footer to whichever parts are missing it.
+// A body that already carries {{unsubscribe_url}} is left alone: the placeholder becomes
+// the real link in both parts when the message is rendered.
+func ensureUnsubscribeFooter(parts bodyParts) bodyParts {
+	if strings.Contains(parts.html, "{{unsubscribe_url}}") {
+		return parts
 	}
-	if idx := strings.LastIndex(strings.ToLower(body), "</body>"); idx != -1 {
-		return body[:idx] + unsubscribeFooter + body[idx:]
+
+	if idx := strings.LastIndex(strings.ToLower(parts.html), "</body>"); idx != -1 {
+		parts.html = parts.html[:idx] + unsubscribeFooter + parts.html[idx:]
+	} else {
+		parts.html += unsubscribeFooter
 	}
-	return body + unsubscribeFooter
+
+	if parts.text != "" {
+		parts.text += unsubscribeFooterText
+	}
+	return parts
 }
 
 type WebhookDispatcher interface {
@@ -217,14 +241,16 @@ func (s *EmailService) SendToSubscriber(ctx context.Context, projectID, subscrib
 		return SendResult{Suppressed: 1}, nil
 	}
 
-	body := ensureUnsubscribeFooter(template.HtmlBody)
-	body = replaceVariables(body, sub)
+	parts := ensureUnsubscribeFooter(bodyParts{html: template.HtmlBody, text: template.TextBody})
+	parts.html = replaceVariables(parts.html, sub)
+	parts.text = replaceVariablesSimple(parts.text, sub)
 	subject := replaceVariablesSimple(template.Subject, sub)
 
 	unsubURL := s.unsubURL(pid.String(), sid.String())
-	body = strings.ReplaceAll(body, "{{unsubscribe_url}}", unsubURL)
+	parts.html = strings.ReplaceAll(parts.html, "{{unsubscribe_url}}", unsubURL)
+	parts.text = strings.ReplaceAll(parts.text, "{{unsubscribe_url}}", unsubURL)
 
-	sendErr := s.trackAndSend(ctx, project, pid, uuid.NullUUID{UUID: sid, Valid: true}, uuid.NullUUID{UUID: tid, Valid: true}, sub.Email, subject, body, unsubURL, uuid.NullUUID{}, uuid.NullUUID{})
+	sendErr := s.trackAndSend(ctx, project, pid, uuid.NullUUID{UUID: sid, Valid: true}, uuid.NullUUID{UUID: tid, Valid: true}, sub.Email, subject, parts, unsubURL, uuid.NullUUID{}, uuid.NullUUID{})
 	if sendErr != nil {
 		return SendResult{Failed: 1}, sendErr
 	}
@@ -416,21 +442,24 @@ func (s *EmailService) SendBroadcastJob(ctx context.Context, job db.BroadcastJob
 	}
 	htmlSet := stringSet(htmlFields)
 
-	body := ensureUnsubscribeFooter(template.HtmlBody)
+	parts := ensureUnsubscribeFooter(bodyParts{html: template.HtmlBody, text: template.TextBody})
 	subject := broadcast.Subject
 	if subject == "" {
 		subject = template.Subject
 	}
 
 	for k, v := range customVars {
-		body = strings.ReplaceAll(body, "{{"+k+"}}", renderValue(v, htmlSet[k]))
+		parts.html = strings.ReplaceAll(parts.html, "{{"+k+"}}", renderValue(v, htmlSet[k]))
+		parts.text = strings.ReplaceAll(parts.text, "{{"+k+"}}", subjectValue(v, htmlSet[k]))
 		subject = strings.ReplaceAll(subject, "{{"+k+"}}", subjectValue(v, htmlSet[k]))
 	}
 
-	body = replaceCustomVariables(body, sub, true)
+	parts.html = replaceCustomVariables(parts.html, sub, true)
+	parts.text = replaceCustomVariables(parts.text, sub, false)
 	subject = replaceCustomVariables(subject, sub, false)
 
-	body = replaceVariables(body, sub)
+	parts.html = replaceVariables(parts.html, sub)
+	parts.text = replaceVariablesSimple(parts.text, sub)
 	subject = replaceVariablesSimple(subject, sub)
 
 	unsubURL := s.unsubURL(job.ProjectID.String(), sub.ID.String())
@@ -440,13 +469,15 @@ func (s *EmailService) SendBroadcastJob(ctx context.Context, job db.BroadcastJob
 			unsubURL = s.unsubNewsletterURL(job.ProjectID.String(), sub.ID.String(), newsletter.ID.String())
 			logNewsletter = broadcast.NewsletterID
 			safeName := html.EscapeString(newsletter.Name)
-			body = strings.ReplaceAll(body, "{{newsletter_name}}", safeName)
+			parts.html = strings.ReplaceAll(parts.html, "{{newsletter_name}}", safeName)
+			parts.text = strings.ReplaceAll(parts.text, "{{newsletter_name}}", newsletter.Name)
 			subject = strings.ReplaceAll(subject, "{{newsletter_name}}", newsletter.Name)
 		}
 	}
-	body = strings.ReplaceAll(body, "{{unsubscribe_url}}", unsubURL)
+	parts.html = strings.ReplaceAll(parts.html, "{{unsubscribe_url}}", unsubURL)
+	parts.text = strings.ReplaceAll(parts.text, "{{unsubscribe_url}}", unsubURL)
 
-	sendErr := s.trackAndSend(ctx, project, job.ProjectID, uuid.NullUUID{UUID: sub.ID, Valid: true}, uuid.NullUUID{UUID: broadcast.TemplateID, Valid: true}, sub.Email, subject, body, unsubURL, uuid.NullUUID{UUID: broadcast.ID, Valid: true}, logNewsletter)
+	sendErr := s.trackAndSend(ctx, project, job.ProjectID, uuid.NullUUID{UUID: sub.ID, Valid: true}, uuid.NullUUID{UUID: broadcast.TemplateID, Valid: true}, sub.Email, subject, parts, unsubURL, uuid.NullUUID{UUID: broadcast.ID, Valid: true}, logNewsletter)
 	if sendErr == nil {
 		return BroadcastJobOutcomeSent, nil
 	}
@@ -521,7 +552,9 @@ func (s *EmailService) SendDirect(ctx context.Context, projectID, to, subject, h
 		return ErrRecipientSuppressed
 	}
 
-	return s.trackAndSend(ctx, project, pid, uuid.NullUUID{}, uuid.NullUUID{}, to, subject, htmlBody, "", uuid.NullUUID{}, uuid.NullUUID{})
+	// A raw HTML body has no authored text of its own, so the text part is derived from
+	// the HTML that is actually being sent.
+	return s.trackAndSend(ctx, project, pid, uuid.NullUUID{}, uuid.NullUUID{}, to, subject, bodyParts{html: htmlBody, text: htmlToText(htmlBody)}, "", uuid.NullUUID{}, uuid.NullUUID{})
 }
 
 func (s *EmailService) SendWithTemplate(ctx context.Context, projectID, templateID, to, subjectOverride string, variables map[string]string, htmlFields []string) error {
@@ -557,34 +590,40 @@ func (s *EmailService) SendWithTemplate(ctx context.Context, projectID, template
 		return ErrRecipientSuppressed
 	}
 
-	body := template.HtmlBody
+	parts := bodyParts{html: template.HtmlBody, text: template.TextBody}
 	subject := template.Subject
 	if subjectOverride != "" {
 		subject = subjectOverride
 	}
 	htmlSet := stringSet(htmlFields)
 	for key, val := range variables {
-		body = strings.ReplaceAll(body, "{{"+key+"}}", renderValue(val, htmlSet[key]))
+		parts.html = strings.ReplaceAll(parts.html, "{{"+key+"}}", renderValue(val, htmlSet[key]))
+		parts.text = strings.ReplaceAll(parts.text, "{{"+key+"}}", subjectValue(val, htmlSet[key]))
 		subject = strings.ReplaceAll(subject, "{{"+key+"}}", subjectValue(val, htmlSet[key]))
 	}
 
 	var unsubscribeURL string
-	needsSubscriber := strings.Contains(body, "{{unsubscribe_url}}") ||
-		strings.Contains(body, "{{custom.") || strings.Contains(subject, "{{custom.")
+	needsSubscriber := strings.Contains(parts.html, "{{unsubscribe_url}}") ||
+		strings.Contains(parts.html, "{{custom.") || strings.Contains(subject, "{{custom.")
 	if needsSubscriber {
 		sub, err := s.queries.GetSubscriberByEmail(ctx, db.GetSubscriberByEmailParams{Email: to, ProjectID: pid})
 		if err == nil {
 			unsubscribeURL = s.unsubURL(pid.String(), sub.ID.String())
-			body = replaceCustomVariables(body, sub, true)
+			parts.html = replaceCustomVariables(parts.html, sub, true)
+			parts.text = replaceCustomVariables(parts.text, sub, false)
 			subject = replaceCustomVariables(subject, sub, false)
-			body = strings.ReplaceAll(body, "{{name}}", html.EscapeString(sub.Name))
-			body = strings.ReplaceAll(body, "{{email}}", html.EscapeString(sub.Email))
-			body = strings.ReplaceAll(body, "{{subscriber_id}}", sub.ID.String())
+			parts.html = strings.ReplaceAll(parts.html, "{{name}}", html.EscapeString(sub.Name))
+			parts.html = strings.ReplaceAll(parts.html, "{{email}}", html.EscapeString(sub.Email))
+			parts.html = strings.ReplaceAll(parts.html, "{{subscriber_id}}", sub.ID.String())
+			parts.text = strings.ReplaceAll(parts.text, "{{name}}", sub.Name)
+			parts.text = strings.ReplaceAll(parts.text, "{{email}}", sub.Email)
+			parts.text = strings.ReplaceAll(parts.text, "{{subscriber_id}}", sub.ID.String())
 		}
-		body = strings.ReplaceAll(body, "{{unsubscribe_url}}", unsubscribeURL)
+		parts.html = strings.ReplaceAll(parts.html, "{{unsubscribe_url}}", unsubscribeURL)
+		parts.text = strings.ReplaceAll(parts.text, "{{unsubscribe_url}}", unsubscribeURL)
 	}
 
-	return s.trackAndSend(ctx, project, pid, uuid.NullUUID{}, uuid.NullUUID{UUID: tid, Valid: true}, to, subject, body, unsubscribeURL, uuid.NullUUID{}, uuid.NullUUID{})
+	return s.trackAndSend(ctx, project, pid, uuid.NullUUID{}, uuid.NullUUID{UUID: tid, Valid: true}, to, subject, parts, unsubscribeURL, uuid.NullUUID{}, uuid.NullUUID{})
 }
 
 type LogFilters struct {
@@ -802,16 +841,18 @@ func (s *EmailService) markLogFailed(ctx context.Context, projectID, logID uuid.
 	s.markLogStatus(ctx, projectID, logID, "failed", sendErr)
 }
 
-func (s *EmailService) trackAndSend(ctx context.Context, project db.Project, projectID uuid.UUID, subscriberID, templateID uuid.NullUUID, to, subject, body, unsubscribeURL string, broadcastID, newsletterID uuid.NullUUID) error {
+func (s *EmailService) trackAndSend(ctx context.Context, project db.Project, projectID uuid.UUID, subscriberID, templateID uuid.NullUUID, to, subject string, parts bodyParts, unsubscribeURL string, broadcastID, newsletterID uuid.NullUUID) error {
 	logID := s.logPending(ctx, projectID, subscriberID, templateID, to, subject, broadcastID, newsletterID)
-	body = normalizeColumns(body)
-	if strings.Contains(strings.ToLower(body), "<style") {
-		body = inlineCSS(body)
+	parts.html = normalizeColumns(parts.html)
+	if strings.Contains(strings.ToLower(parts.html), "<style") {
+		parts.html = inlineCSS(parts.html)
 	}
-	body = s.injectTrackingPixel(body, logID)
-	body = s.rewriteLinksForTracking(body, logID)
+	// The tracking pixel and the rewritten links belong to the HTML part only: neither
+	// has a meaning in plain text, and rewriting links there would corrupt the URLs.
+	parts.html = s.injectTrackingPixel(parts.html, logID)
+	parts.html = s.rewriteLinksForTracking(parts.html, logID)
 	metrics.EmailAttempt()
-	sendErr := s.sendSMTP(project, to, subject, body, unsubscribeURL)
+	sendErr := s.sendSMTP(project, to, subject, parts, unsubscribeURL)
 	if sendErr != nil {
 		metrics.SMTPError(sendErr)
 	}
@@ -1129,14 +1170,18 @@ func (s *EmailService) TestSMTP(ctx context.Context, projectID string) error {
 		fromEmail = project.FromEmail.String
 	}
 
-	return s.sendSMTPWithTimeouts(project, fromEmail, "SendDock SMTP Test", "<h2>SMTP is working!</h2><p>Your SendDock SMTP configuration is correct.</p>", "", smtpTestConnectTimeout, smtpTestSessionTimeout)
+	test := bodyParts{
+		html: "<h2>SMTP is working!</h2><p>Your SendDock SMTP configuration is correct.</p>",
+		text: "SMTP is working!\n\nYour SendDock SMTP configuration is correct.",
+	}
+	return s.sendSMTPWithTimeouts(project, fromEmail, "SendDock SMTP Test", test, "", smtpTestConnectTimeout, smtpTestSessionTimeout)
 }
 
-func (s *EmailService) sendSMTP(project db.Project, to, subject, htmlBody, unsubscribeURL string) error {
-	return s.sendSMTPWithTimeouts(project, to, subject, htmlBody, unsubscribeURL, smtpConnectTimeout, smtpSessionTimeout)
+func (s *EmailService) sendSMTP(project db.Project, to, subject string, parts bodyParts, unsubscribeURL string) error {
+	return s.sendSMTPWithTimeouts(project, to, subject, parts, unsubscribeURL, smtpConnectTimeout, smtpSessionTimeout)
 }
 
-func (s *EmailService) sendSMTPWithTimeouts(project db.Project, to, subject, htmlBody, unsubscribeURL string, connectTimeout, sessionTimeout time.Duration) error {
+func (s *EmailService) sendSMTPWithTimeouts(project db.Project, to, subject string, parts bodyParts, unsubscribeURL string, connectTimeout, sessionTimeout time.Duration) error {
 	host := project.SmtpHost.String
 	port := project.SmtpPort.Int32
 	user := project.SmtpUser.String
@@ -1156,7 +1201,8 @@ func (s *EmailService) sendSMTPWithTimeouts(project db.Project, to, subject, htm
 		from = fmt.Sprintf("%s <%s>", project.FromName.String, fromEmail)
 	}
 
-	msg := buildMIME(from, to, subject, unsubscribeURL, inlineCSS(htmlBody))
+	parts.html = inlineCSS(parts.html)
+	msg := buildMIME(from, to, subject, unsubscribeURL, parts)
 
 	addr := fmt.Sprintf("%s:%d", host, port)
 
@@ -1200,13 +1246,60 @@ func headerSafe(value string) string {
 // buildMIME assembles the message that goes on the wire: headers, a blank line, then the
 // rendered body. Every interpolated header value is stripped of line breaks here, at the
 // single point where headers are built, so no caller can bypass it.
-func buildMIME(from, to, subject, unsubscribeURL, body string) []byte {
-	headers := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n",
-		headerSafe(from), headerSafe(to), headerSafe(subject))
+//
+// A message carrying a text rendition goes out as multipart/alternative with the plain
+// text second to last, as RFC 2046 requires: a client that understands only the last part
+// it can render still shows the earlier one.
+func buildMIME(from, to, subject, unsubscribeURL string, parts bodyParts) []byte {
+	// A message carrying a text rendition goes out as multipart/alternative with the plain
+	// text second to last, as RFC 2046 requires: a client that understands only the last
+	// part it can render still shows the earlier one.
+	boundary := ""
+	contentType := "text/html; charset=UTF-8"
+	if parts.text != "" {
+		boundary = mimeBoundary(parts)
+		contentType = fmt.Sprintf("multipart/alternative; boundary=\"%s\"", boundary)
+	}
+
+	headers := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: %s\r\n",
+		headerSafe(from), headerSafe(to), headerSafe(subject), contentType)
 	if unsubscribeURL != "" {
 		headers += fmt.Sprintf("List-Unsubscribe: <%s>\r\nList-Unsubscribe-Post: List-Unsubscribe=One-Click\r\n", headerSafe(unsubscribeURL))
 	}
-	return []byte(headers + "\r\n" + body)
+
+	if boundary == "" {
+		return []byte(headers + "\r\n" + parts.html)
+	}
+
+	var message strings.Builder
+	message.WriteString(headers)
+	message.WriteString("\r\n")
+	message.WriteString("--" + boundary + "\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n")
+	message.WriteString(parts.text)
+	message.WriteString("\r\n--" + boundary + "\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n")
+	message.WriteString(parts.html)
+	message.WriteString("\r\n--" + boundary + "--\r\n")
+
+	return []byte(message.String())
+}
+
+// mimeBoundary picks the delimiter that separates the parts, retrying until it is one that
+// does not occur inside either of them: a boundary that appears in the content would split
+// the message in the middle of a sentence.
+func mimeBoundary(parts bodyParts) string {
+	for attempt := 0; attempt < 8; attempt++ {
+		random := make([]byte, 18)
+		if _, err := rand.Read(random); err != nil {
+			break
+		}
+		boundary := "=_senddock_" + hex.EncodeToString(random)
+		if !strings.Contains(parts.html, boundary) && !strings.Contains(parts.text, boundary) {
+			return boundary
+		}
+	}
+	// A random source that cannot be read would otherwise produce a message with no
+	// usable delimiter at all.
+	return "=_senddock_alternative"
 }
 
 const (

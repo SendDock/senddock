@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/arkhe-systems/senddock/internal/db"
 	"github.com/google/uuid"
@@ -16,6 +17,17 @@ func NewTemplateService(queries *db.Queries) *TemplateService {
 	return &TemplateService{queries: queries}
 }
 
+// resolveTextBody fills in the plain-text part of a template. Every message ships a
+// text/plain part next to its HTML, and the editor has no field for it, so a template
+// saved without one gets it derived from its HTML. A value that was authored is kept as
+// it is.
+func resolveTextBody(htmlBody, textBody string) string {
+	if strings.TrimSpace(textBody) != "" {
+		return textBody
+	}
+	return htmlToText(htmlBody)
+}
+
 func (s *TemplateService) Create(ctx context.Context, projectID, name, subject, htmlBody, textBody, templateType string) (db.Template, error) {
 	pid, err := uuid.Parse(projectID)
 	if err != nil {
@@ -27,7 +39,7 @@ func (s *TemplateService) Create(ctx context.Context, projectID, name, subject, 
 		Name:      name,
 		Subject:   subject,
 		HtmlBody:  htmlBody,
-		TextBody:  textBody,
+		TextBody:  resolveTextBody(htmlBody, textBody),
 		Type:      templateType,
 	})
 }
@@ -75,7 +87,7 @@ func (s *TemplateService) Update(ctx context.Context, templateID, projectID, nam
 		Name:      name,
 		Subject:   subject,
 		HtmlBody:  htmlBody,
-		TextBody:  textBody,
+		TextBody:  resolveTextBody(htmlBody, textBody),
 	})
 }
 

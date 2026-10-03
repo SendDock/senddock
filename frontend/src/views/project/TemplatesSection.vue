@@ -112,7 +112,7 @@ async function handleCreate() {
     try {
         const tmpl = await api<Template>(`/projects/${props.project.id}/templates`, {
             method: 'POST',
-            body: { name: newName.value, subject: '', html_body: '', text_body: '', type: newType.value },
+            body: { name: newName.value, subject: '', html_body: '', type: newType.value },
         })
         showCreateModal.value = false
         newName.value = ''
@@ -165,20 +165,6 @@ function confirmDiscard() {
     fetchTemplates()
 }
 
-function htmlToText(html: string): string {
-    return html
-        .replace(/<style[\s\S]*?<\/style>/gi, '')
-        .replace(/<(br|\/p|\/div|\/tr|\/h[1-6]|\/li)[^>]*>/gi, '\n')
-        .replace(/<[^>]+>/g, '')
-        .replace(/&nbsp;/gi, ' ')
-        .replace(/&amp;/gi, '&')
-        .replace(/&lt;/gi, '<')
-        .replace(/&gt;/gi, '>')
-        .replace(/[ \t]+/g, ' ')
-        .replace(/\n[ \t]*\n+/g, '\n')
-        .trim()
-}
-
 function onBeforeUnload(e: BeforeUnloadEvent) {
     if (isDirty.value) {
         e.preventDefault()
@@ -211,7 +197,6 @@ async function handleSave() {
                 name: editName.value,
                 subject: editSubject.value,
                 html_body: htmlBody,
-                text_body: htmlToText(editHtml.value),
             },
         })
         editHtml.value = htmlBody
