@@ -180,7 +180,16 @@ See available tags on [GHCR](https://github.com/Arkhe-Systems/senddock/pkgs/cont
 
 ## Option 3: Dokploy
 
-A SendDock template is [pending review in the Dokploy marketplace](https://github.com/Dokploy/templates/pull/821). Until it lands, deploy via Dokploy's **Docker Compose** type:
+SendDock is in the Dokploy template marketplace — [dokploy.com/templates/senddock](https://dokploy.com/templates/senddock). Dokploy creates the SendDock, Postgres and Redis services, generates `POSTGRES_PASSWORD` and `JWT_SECRET`, adds the volumes and routes your domain through Traefik:
+
+1. Install Dokploy on your server if you haven't already.
+2. In your Dokploy panel, open a project and click **Create Service → Template**.
+3. Search for SendDock and click **Create** — Dokploy configures the domain, the environment variables and the volumes for you.
+4. Deploy.
+
+The template pulls `ghcr.io/arkhe-systems/senddock:latest`, so a fresh install always gets the current release. Its gallery entry reports `latest` instead of a version number, because a floating tag cannot keep a number true.
+
+To manage the stack yourself instead — pinning a version, adding the Watchtower override, or editing the compose by hand — use Dokploy's **Docker Compose** service type:
 
 1. **Dokploy → Project → Create Service → Docker Compose**
 2. Paste the contents of [`docker-compose.image.yml`](https://github.com/Arkhe-Systems/senddock/blob/main/docker-compose.image.yml). Optionally append the Watchtower override block from [Updating → One-click updates](./updating#one-click-updates-from-the-dashboard-watchtower) if you want the dashboard's "Update now" button to work directly from SendDock.

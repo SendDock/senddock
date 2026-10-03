@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Releases are also published on [GitHub](https://github.com/arkhe-systems/senddock/releases) and the `ghcr.io/arkhe-systems/senddock` image carries the matching tag.
 
+## [Unreleased]
+
+### Fixed
+
+- **The Dokploy page said the template was still waiting for review.** [PR #821](https://github.com/Dokploy/templates/pull/821) merged on 2026-07-07 and the template has been installable from the panel since, but the option kept presenting Docker Compose as the only way in and told readers to wait for it. The page now leads with the template, says what Dokploy sets up, and keeps the Compose path for anyone who wants to pin a version or edit the stack by hand. The related gallery entry showed `v0.8.0` while the template pulled `:latest`, because that version is written by hand into the template's metadata and nothing derives it from the image — [Dokploy/templates#1213](https://github.com/Dokploy/templates/pull/1213) switches it to `latest`, which cannot go stale.
+
 ## [0.8.3] — 2026-09-27
 
 ### Removed
