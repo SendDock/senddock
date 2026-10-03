@@ -20,6 +20,8 @@ Pre-1.0 minor releases may contain breaking changes — check the version's note
 
 - **The Dokploy page said the template was still waiting for review.** [PR #821](https://github.com/Dokploy/templates/pull/821) merged on 2026-07-07 and the template has been installable from the panel since, but the option kept presenting Docker Compose as the only way in and told readers to wait for it. The page now leads with the template, says what Dokploy sets up, and keeps the Compose path for anyone who wants to pin a version or edit the stack by hand. The related gallery entry showed `v0.8.0` while the template pulled `:latest`, because that version is written by hand into the template's metadata and nothing derives it from the image — [Dokploy/templates#1213](https://github.com/Dokploy/templates/pull/1213) switches it to `latest`, which cannot go stale.
 
+- **Emails now carry the plain-text part they always claimed to.** The message was HTML-only: `Content-Type: text/html` with no alternative, and the template's `text_body` was never read anywhere in the send path. The docs said the opposite in two places — the guide promised each email ships both parts, and the API said a template saved without a `text_body` gets one derived from its HTML — while in practice the browser generated the text and the server discarded it. A message is now `multipart/alternative` with a `text/plain` part first, so a client that cannot render HTML shows readable text instead of nothing, and text-only readers get the unsubscribe link too. The template service derives the text from the HTML when a template is saved without one, which also covers templates created through the API and installed from the library.
+
 ## [0.8.3] — 2026-09-27
 
 ### Removed

@@ -264,7 +264,7 @@ SendDock automatically inlines CSS styles before sending. If your template uses 
 
 The same pass converts the visual builder's **columns** — which are divs in the editor (`display: table-cell`) — back into real `<table>/<tr>/<td>` markup, so multi-column layouts render side-by-side in Outlook as well as Gmail.
 
-When you save a template, SendDock also generates the plain-text `text_body` from the HTML, so every email ships both an HTML and a plain-text part without writing it twice.
+When you save a template, SendDock also generates the plain-text `text_body` from the HTML, so every email ships both an HTML and a plain-text part without writing it twice. The message goes out as `multipart/alternative` with the text version first, and a client that cannot render HTML shows that one instead. Links survive the conversion, so the unsubscribe link reaches a plain-text reader too.
 
 ## Email Logs
 

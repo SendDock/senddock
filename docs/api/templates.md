@@ -13,12 +13,12 @@ POST /api/v1/projects/{id}/templates
   "name": "Welcome Email",
   "subject": "Welcome {{name}}!",
   "html_body": "<h1>Hello {{name}}</h1>",
-  "text_body": "",
+  "text_body": "Hello {{name}}",
   "type": "email"
 }
 ```
 
-Only `name` is required. `text_body` is optional — when empty, SendDock generates a plain-text version from `html_body` at save time so every email ships both an HTML and a text part. `subject` and `text_body` apply to `type: "email"` templates only.
+Only `name` is required. `text_body` is optional: when it is empty or omitted, SendDock derives a plain-text version from `html_body` and stores it, so the response carries the generated text and every message ships both an HTML and a text part. A value you send is kept as authored. `subject` and `text_body` apply to `type: "email"` templates only.
 
 **Response** `201`
 
@@ -73,6 +73,8 @@ PUT /api/v1/projects/{id}/templates/{templateId}
   "text_body": ""
 }
 ```
+
+Sending an empty `text_body` asks SendDock to derive it from the new HTML; omit the field to get the same result.
 
 ## Delete Template
 
