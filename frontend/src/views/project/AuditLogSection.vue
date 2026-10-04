@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from '@/api/client'
 import { useLicenseStore } from '@/stores/license'
-import type { Project } from '@/stores/projects'
 import AppProPaywall from '@/components/ui/AppProPaywall.vue'
 import AppPagination from '@/components/ui/AppPagination.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
@@ -22,7 +22,7 @@ interface AuditEntry {
     created_at: string
 }
 
-const ACTIONS = [
+const PROJECT_ACTIONS = [
     { value: '', label: 'All actions' },
     { value: 'project.create', label: 'Project created' },
     { value: 'project.update', label: 'Project updated' },
@@ -39,7 +39,38 @@ const ACTIONS = [
     { value: 'subscriber.bulk_update_status', label: 'Subscribers status changed' },
 ]
 
-const props = defineProps<{ project: Project }>()
+const WORKSPACE_ACTIONS = [
+    { value: '', label: 'All actions' },
+    { value: 'workspace.create', label: 'Workspace created' },
+    { value: 'workspace.rename', label: 'Workspace renamed' },
+    { value: 'workspace.delete', label: 'Workspace deleted' },
+    { value: 'workspace.member_added', label: 'Member added' },
+    { value: 'workspace.user_created', label: 'Account created and added' },
+    { value: 'workspace.member_role_changed', label: 'Member role changed' },
+    { value: 'workspace.member_removed', label: 'Member removed' },
+]
+
+// A workspace action belongs to the workspace, so it is listed for the workspace and not for
+// one of its projects. The scope decides which trail is being read, the id comes from the
+// route, and the endpoint follows from both.
+const props = withDefaults(defineProps<{ scope?: 'project' | 'workspace' }>(), { scope: 'project' })
+const route = useRoute()
+
+const COPY = {
+    project: {
+        subtitle: 'Every important action against this project.',
+        paywall: 'A timestamped trail of every project change — who changed what, from which IP, with what payload.',
+        empty: "As soon as you create projects, send broadcasts, manage webhooks or change settings, they'll show up here.",
+    },
+    workspace: {
+        subtitle: 'Who changed this workspace and who has access to it.',
+        paywall: 'A timestamped trail of every workspace change — who was invited, who was removed, which role changed, from which IP.',
+        empty: 'As soon as you rename this workspace or add, change or remove a member, it will show up here.',
+    },
+} as const
+
+const actions = computed(() => (props.scope === 'workspace' ? WORKSPACE_ACTIONS : PROJECT_ACTIONS))
+const copy = computed(() => COPY[props.scope])
 
 const entries = ref<AuditEntry[]>([])
 const total = ref(0)
@@ -54,7 +85,7 @@ const limit = ref(50)
 
 const summary = computed(() => `${total.value} ${total.value === 1 ? 'entry' : 'entries'}`)
 
-const actionLabel = (a: string) => ACTIONS.find(x => x.value === a)?.label ?? a
+const actionLabel = (a: string) => actions.value.find(x => x.value === a)?.label ?? a
 
 async function fetchList() {
     loading.value = true
@@ -70,8 +101,9 @@ async function fetchList() {
         if (filterAction.value) params.set('action', filterAction.value)
         if (filterFrom.value) params.set('from', new Date(filterFrom.value).toISOString())
         if (filterTo.value) params.set('to', new Date(filterTo.value + 'T23:59:59').toISOString())
+        const segment = props.scope === 'workspace' ? 'workspaces' : 'projects'
         const res = await api<{ entries: AuditEntry[] | null, total: number }>(
-            `/projects/${props.project.id}/audit-log?${params.toString()}`,
+            `/${segment}/${route.params.id}/audit-log?${params.toString()}`,
         )
         entries.value = res.entries ?? []
         total.value = res.total
@@ -119,7 +151,7 @@ onMounted(fetchList)
                     <span class="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">Pro</span>
                 </div>
                 <p class="text-sm text-zinc-400 mt-1">
-                    Every important action against this project. {{ summary }}.
+                    {{ copy.subtitle }} {{ summary }}.
                 </p>
             </div>
         </div>
@@ -128,7 +160,7 @@ onMounted(fetchList)
 
         <AppProPaywall v-else-if="errorState === 'paywall'"
             title="Audit log"
-            description="A timestamped trail of every project change — who changed what, from which IP, with what payload." />
+            :description="copy.paywall" />
 
         <div v-else-if="errorState === 'generic'"
             class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 text-center">
@@ -140,7 +172,7 @@ onMounted(fetchList)
             <div class="flex items-end gap-3 mb-4 flex-wrap">
                 <div>
                     <label class="block text-xs text-zinc-400 mb-1">Action</label>
-                    <AppSelect v-model="filterAction" size="sm" :options="ACTIONS" @change="applyFilters" />
+                    <AppSelect v-model="filterAction" size="sm" :options="actions" @change="applyFilters" />
                 </div>
                 <div>
                     <label class="block text-xs text-zinc-400 mb-1">From</label>
@@ -160,7 +192,7 @@ onMounted(fetchList)
 
             <div v-if="entries.length === 0" class="bg-zinc-900 border border-zinc-800 rounded-lg p-10 text-center">
                 <h2 class="text-base font-semibold text-white mb-1">No entries match these filters</h2>
-                <p class="text-sm text-zinc-400">As soon as you create projects, send broadcasts, manage webhooks or change settings, they'll show up here.</p>
+                <p class="text-sm text-zinc-400">{{ copy.empty }}</p>
             </div>
 
             <div v-else class="bg-zinc-900 border border-zinc-800 rounded-lg overflow-x-auto">

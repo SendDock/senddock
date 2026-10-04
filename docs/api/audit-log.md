@@ -1,10 +1,10 @@
 # Audit log API <Badge type="warning" text="Pro" />
 
-Read the per-project audit log — every sensitive action with actor, timestamp and metadata. Pro-gated: without a valid Pro license this endpoint returns `402 Payment Required`. See the [Audit log guide](../guide/audit-log) for the catalog of tracked actions.
+Read the audit log — every sensitive action with actor, timestamp and metadata. Two scopes: a project's own trail, and the workspace's, which holds the workspace and member changes that belong to no single project. Both are Pro-gated: without a valid Pro license they return `402 Payment Required`. See the [Audit log guide](../guide/audit-log) for the catalog of tracked actions.
 
 Cookie auth only on this endpoint — the audit log isn't readable via API key, the actor identity is mandatory and a project-scoped API key has none.
 
-## List audit entries
+## List a project's audit entries
 
 ```
 GET /api/v1/projects/{id}/audit-log
@@ -79,6 +79,35 @@ curl -G "$YOUR_BASE_URL/api/v1/projects/$YOUR_PROJECT_ID/audit-log" \
   -b cookies.txt \
   --data-urlencode "action=smtp.update" \
   --data-urlencode "from=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)"
+```
+
+## List a workspace's audit entries
+
+```
+GET /api/v1/workspaces/{id}/audit-log
+```
+
+The same query parameters, response shape and pagination as the project endpoint above. It returns the actions that belong to the workspace itself:
+
+`workspace.create`, `workspace.rename`, `workspace.delete`, `workspace.member_added`, `workspace.member_role_changed`, `workspace.member_removed`, `workspace.user_created`
+
+These are recorded with a `workspace` target and no project, so they are not part of any project's log — listing a project does not return them, and reading them here works even for a workspace with no projects.
+
+### Errors
+
+| Status | Cause |
+|---|---|
+| `401` | Missing cookie session. |
+| `402` | No valid Pro license key. |
+| `403` | The authenticated user is not a member of this workspace. |
+| `404` | Workspace not found. |
+
+### Examples
+
+```bash
+# Who joined, left or changed role in this workspace
+curl "$YOUR_BASE_URL/api/v1/workspaces/$YOUR_WORKSPACE_ID/audit-log" \
+  -b cookies.txt
 ```
 
 ## Retention

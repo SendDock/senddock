@@ -194,6 +194,10 @@ onMounted(async () => {
                                 class="w-full text-left px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-850 transition cursor-pointer">
                                 Manage workspace
                             </button>
+                            <button v-if="activeWorkspace" @click="router.push(`/workspaces/${activeWorkspace.id}/audit-log`); showWorkspaceMenu = false; mobileNavOpen = false"
+                                class="w-full text-left px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-850 transition cursor-pointer">
+                                Workspace audit log
+                            </button>
                             <button @click="showCreateWorkspaceModal = true; showWorkspaceMenu = false"
                                 class="w-full text-left px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-850 transition cursor-pointer">
                                 + New workspace

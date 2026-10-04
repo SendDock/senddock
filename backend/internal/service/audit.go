@@ -22,14 +22,15 @@ func NewAuditService(queries *db.Queries) *AuditService {
 }
 
 type AuditEntry struct {
-	ProjectID  uuid.NullUUID
-	UserID     uuid.NullUUID
-	Action     string
-	TargetType string
-	TargetID   string
-	Metadata   map[string]any
-	IPAddress  string
-	UserAgent  string
+	ProjectID   uuid.NullUUID
+	WorkspaceID uuid.NullUUID
+	UserID      uuid.NullUUID
+	Action      string
+	TargetType  string
+	TargetID    string
+	Metadata    map[string]any
+	IPAddress   string
+	UserAgent   string
 }
 
 func (s *AuditService) Log(ctx context.Context, entry AuditEntry) {
@@ -43,29 +44,44 @@ func (s *AuditService) Log(ctx context.Context, entry AuditEntry) {
 		}
 	}
 	_, _ = s.queries.CreateAuditEntry(ctx, db.CreateAuditEntryParams{
-		ProjectID:  entry.ProjectID,
-		UserID:     entry.UserID,
-		Action:     entry.Action,
-		TargetType: nullIfEmpty(entry.TargetType),
-		TargetID:   nullIfEmpty(entry.TargetID),
-		Metadata:   meta,
-		IpAddress:  parseInet(entry.IPAddress),
-		UserAgent:  nullIfEmpty(entry.UserAgent),
+		ProjectID:   entry.ProjectID,
+		WorkspaceID: entry.WorkspaceID,
+		UserID:      entry.UserID,
+		Action:      entry.Action,
+		TargetType:  nullIfEmpty(entry.TargetType),
+		TargetID:    nullIfEmpty(entry.TargetID),
+		Metadata:    meta,
+		IpAddress:   parseInet(entry.IPAddress),
+		UserAgent:   nullIfEmpty(entry.UserAgent),
 	})
 }
 
 func (s *AuditService) LogFromRequest(r *http.Request, projectID, userID, action, targetType, targetID string, metadata map[string]any) {
+	s.logFromRequest(r, projectID, "", userID, action, targetType, targetID, metadata)
+}
+
+// LogWorkspaceFromRequest records an action that belongs to a workspace rather than to a
+// project: creating or renaming it, or adding, changing and removing one of its members.
+// There is no project to file those under, and filing them under none is what made every one
+// of them unreadable — the audit log is filtered by scope.
+func (s *AuditService) LogWorkspaceFromRequest(r *http.Request, workspaceID, userID, action, targetType, targetID string, metadata map[string]any) {
+	s.logFromRequest(r, "", workspaceID, userID, action, targetType, targetID, metadata)
+}
+
+func (s *AuditService) logFromRequest(r *http.Request, projectID, workspaceID, userID, action, targetType, targetID string, metadata map[string]any) {
 	pid, _ := uuid.Parse(projectID)
+	wid, _ := uuid.Parse(workspaceID)
 	uid, _ := uuid.Parse(userID)
 	s.Log(r.Context(), AuditEntry{
-		ProjectID:  uuid.NullUUID{UUID: pid, Valid: pid != uuid.Nil},
-		UserID:     uuid.NullUUID{UUID: uid, Valid: uid != uuid.Nil},
-		Action:     action,
-		TargetType: targetType,
-		TargetID:   targetID,
-		Metadata:   metadata,
-		IPAddress:  clientIP(r),
-		UserAgent:  r.UserAgent(),
+		ProjectID:   uuid.NullUUID{UUID: pid, Valid: pid != uuid.Nil},
+		WorkspaceID: uuid.NullUUID{UUID: wid, Valid: wid != uuid.Nil},
+		UserID:      uuid.NullUUID{UUID: uid, Valid: uid != uuid.Nil},
+		Action:      action,
+		TargetType:  targetType,
+		TargetID:    targetID,
+		Metadata:    metadata,
+		IPAddress:   clientIP(r),
+		UserAgent:   r.UserAgent(),
 	})
 }
 

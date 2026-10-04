@@ -47,6 +47,15 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/workspaces/:id/audit-log',
+      name: 'workspace-audit-log',
+      // The project view mounts the same component for its own trail; the scope tells it
+      // which actions to offer and which endpoint to read.
+      component: () => import('@/views/project/AuditLogSection.vue'),
+      props: { scope: 'workspace' },
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/account',
       name: 'account',
       component: () => import('@/views/account/AccountView.vue'),

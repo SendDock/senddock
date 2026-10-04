@@ -24,16 +24,17 @@ type ApiKey struct {
 }
 
 type AuditLog struct {
-	ID         uuid.UUID
-	ProjectID  uuid.NullUUID
-	UserID     uuid.NullUUID
-	Action     string
-	TargetType sql.NullString
-	TargetID   sql.NullString
-	Metadata   json.RawMessage
-	IpAddress  pqtype.Inet
-	UserAgent  sql.NullString
-	CreatedAt  time.Time
+	ID          uuid.UUID
+	ProjectID   uuid.NullUUID
+	UserID      uuid.NullUUID
+	Action      string
+	TargetType  sql.NullString
+	TargetID    sql.NullString
+	Metadata    json.RawMessage
+	IpAddress   pqtype.Inet
+	UserAgent   sql.NullString
+	CreatedAt   time.Time
+	WorkspaceID uuid.NullUUID
 }
 
 type Broadcast struct {
