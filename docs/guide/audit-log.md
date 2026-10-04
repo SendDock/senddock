@@ -33,7 +33,12 @@ Each entry stores:
 
 ## Where to see it
 
-In the project sidebar, open **Audit Log**. Filter by action or by date range. Each entry expands to show the metadata JSON. Workspace-level entries (Team) are recorded with a `workspace` target.
+There are two trails, because there are two scopes:
+
+- **A project's** — open **Audit Log** in the project sidebar. Everything done inside that project: its settings, its keys, its webhooks, its sends.
+- **A workspace's** — open **Workspace audit log** in the workspace menu. Who created, renamed or deleted the workspace, and who was added, promoted or removed. These entries belong to the workspace and not to any one of its projects, so they are listed once here rather than repeated in every project's log — and they are readable even when the workspace has no projects yet.
+
+Filter by action or by date range in either one. Each entry expands to show the metadata JSON.
 
 ## API
 

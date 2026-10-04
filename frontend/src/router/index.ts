@@ -47,6 +47,13 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/workspaces/:id/audit-log',
+      name: 'workspace-audit-log',
+      component: () => import('@/views/project/AuditLogSection.vue'),
+      props: { scope: 'workspace' },
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/account',
       name: 'account',
       component: () => import('@/views/account/AccountView.vue'),

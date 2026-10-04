@@ -77,7 +77,7 @@ func (h *WorkspaceHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.Audit != nil {
-		h.Audit.LogFromRequest(r, "", userID, "workspace.create", "workspace", ws.ID.String(), map[string]any{"name": ws.Name})
+		h.Audit.LogWorkspaceFromRequest(r, ws.ID.String(), userID, "workspace.create", "workspace", ws.ID.String(), map[string]any{"name": ws.Name})
 	}
 
 	writeJSON(w, http.StatusCreated, workspaceResponse{
@@ -117,7 +117,7 @@ func (h *WorkspaceHandler) Rename(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.Audit != nil {
-		h.Audit.LogFromRequest(r, "", userID, "workspace.rename", "workspace", ws.ID.String(), map[string]any{"name": ws.Name})
+		h.Audit.LogWorkspaceFromRequest(r, ws.ID.String(), userID, "workspace.rename", "workspace", ws.ID.String(), map[string]any{"name": ws.Name})
 	}
 
 	writeJSON(w, http.StatusOK, workspaceResponse{
@@ -145,7 +145,7 @@ func (h *WorkspaceHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.Audit != nil {
-		h.Audit.LogFromRequest(r, "", userID, "workspace.delete", "workspace", wid.String(), nil)
+		h.Audit.LogWorkspaceFromRequest(r, wid.String(), userID, "workspace.delete", "workspace", wid.String(), nil)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -215,7 +215,7 @@ func (h *WorkspaceHandler) AddMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.Audit != nil {
-		h.Audit.LogFromRequest(r, "", userID, "workspace.member_added", "workspace", wid.String(), map[string]any{"member_id": member.UserID.String(), "role": member.Role})
+		h.Audit.LogWorkspaceFromRequest(r, wid.String(), userID, "workspace.member_added", "workspace", wid.String(), map[string]any{"member_id": member.UserID.String(), "role": member.Role})
 	}
 
 	writeJSON(w, http.StatusCreated, member)
@@ -251,7 +251,7 @@ func (h *WorkspaceHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.Audit != nil {
-		h.Audit.LogFromRequest(r, "", userID, "workspace.user_created", "workspace", wid.String(), map[string]any{"member_id": created.UserID.String(), "email": created.Email, "role": created.Role})
+		h.Audit.LogWorkspaceFromRequest(r, wid.String(), userID, "workspace.user_created", "workspace", wid.String(), map[string]any{"member_id": created.UserID.String(), "email": created.Email, "role": created.Role})
 	}
 
 	writeJSON(w, http.StatusCreated, created)
@@ -287,7 +287,7 @@ func (h *WorkspaceHandler) UpdateMember(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if h.Audit != nil {
-		h.Audit.LogFromRequest(r, "", userID, "workspace.member_role_changed", "workspace", wid.String(), map[string]any{"member_id": target.String(), "role": req.Role})
+		h.Audit.LogWorkspaceFromRequest(r, wid.String(), userID, "workspace.member_role_changed", "workspace", wid.String(), map[string]any{"member_id": target.String(), "role": req.Role})
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -313,7 +313,7 @@ func (h *WorkspaceHandler) RemoveMember(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if h.Audit != nil {
-		h.Audit.LogFromRequest(r, "", userID, "workspace.member_removed", "workspace", wid.String(), map[string]any{"member_id": target.String()})
+		h.Audit.LogWorkspaceFromRequest(r, wid.String(), userID, "workspace.member_removed", "workspace", wid.String(), map[string]any{"member_id": target.String()})
 	}
 
 	w.WriteHeader(http.StatusNoContent)
@@ -366,4 +366,3 @@ func requireUUID(w http.ResponseWriter, r *http.Request, name, msg string) (uuid
 	}
 	return id, true
 }
-

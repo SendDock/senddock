@@ -15,25 +15,27 @@ import (
 )
 
 const createAuditEntry = `-- name: CreateAuditEntry :one
-INSERT INTO audit_log (project_id, user_id, action, target_type, target_id, metadata, ip_address, user_agent)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, project_id, user_id, action, target_type, target_id, metadata, ip_address, user_agent, created_at
+INSERT INTO audit_log (project_id, workspace_id, user_id, action, target_type, target_id, metadata, ip_address, user_agent)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id, project_id, user_id, action, target_type, target_id, metadata, ip_address, user_agent, created_at, workspace_id
 `
 
 type CreateAuditEntryParams struct {
-	ProjectID  uuid.NullUUID
-	UserID     uuid.NullUUID
-	Action     string
-	TargetType sql.NullString
-	TargetID   sql.NullString
-	Metadata   json.RawMessage
-	IpAddress  pqtype.Inet
-	UserAgent  sql.NullString
+	ProjectID   uuid.NullUUID
+	WorkspaceID uuid.NullUUID
+	UserID      uuid.NullUUID
+	Action      string
+	TargetType  sql.NullString
+	TargetID    sql.NullString
+	Metadata    json.RawMessage
+	IpAddress   pqtype.Inet
+	UserAgent   sql.NullString
 }
 
 func (q *Queries) CreateAuditEntry(ctx context.Context, arg CreateAuditEntryParams) (AuditLog, error) {
 	row := q.db.QueryRowContext(ctx, createAuditEntry,
 		arg.ProjectID,
+		arg.WorkspaceID,
 		arg.UserID,
 		arg.Action,
 		arg.TargetType,
@@ -54,6 +56,7 @@ func (q *Queries) CreateAuditEntry(ctx context.Context, arg CreateAuditEntryPara
 		&i.IpAddress,
 		&i.UserAgent,
 		&i.CreatedAt,
+		&i.WorkspaceID,
 	)
 	return i, err
 }
