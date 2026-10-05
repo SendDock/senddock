@@ -86,20 +86,19 @@ The `$9` and `$29` prices on this page are the **self-hosted** rates — one lic
 | Capability | Community (Free) | Pro ($9 / mo, $90 / yr) | Team ($29 / mo, $290 / yr) |
 |---|---|---|---|
 | Single user, multiple workspaces | ✓ | ✓ | ✓ |
-| Subscribers, templates, broadcasts | ✓ | ✓ | ✓ |
+| Subscribers, templates, segments, tags, newsletters, broadcasts | ✓ | ✓ | ✓ |
 | BYO SMTP, unlimited sends | ✓ | ✓ | ✓ |
 | Bounce ingestion, suppression list | ✓ | ✓ | ✓ |
 | Click & open tracking | ✓ | ✓ | ✓ |
-| API keys + webhook dispatcher | ✓ | ✓ | ✓ |
+| API keys + webhooks (dispatcher & management UI) | ✓ | ✓ | ✓ |
 | Analytics dashboard (Overview, Campaigns, Audience, Engagement) | ✓ | ✓ | ✓ |
-| Webhooks management UI | — | ✓ | ✓ |
 | Deliverability — domain health + per-provider rates + spam rate | — | ✓ | ✓ |
 | Report builder — pivots, segment filters, saved reports, CSV | — | ✓ | ✓ |
 | Audit log | — | ✓ | ✓ |
 | Multi-user workspaces (members + invites) | — | — | ✓ |
 | Roles: owner / admin / developer / viewer | — | — | ✓ |
 | Admin user creation (no public registration needed) | — | — | ✓ |
-| A/B testing, segments & tags, approval workflow | — | — | roadmap |
+| Email approval workflow for broadcasts | — | — | roadmap |
 
 A future **Enterprise** tier will add SSO/SCIM, per-project ACLs, white-label tracking domain, per-seat billing and SLA support — pricing on request, starting around $149 / mo.
 
