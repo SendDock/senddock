@@ -126,13 +126,61 @@
 
 Phases 1–9 above document the foundation that shipped. The list below groups upcoming work into release-themed milestones rather than fixed version numbers — specific version numbers and dates are decided at release time as scope settles. 1.0 is reserved for when the platform is genuinely polished end-to-end; it is not the next release. Milestones ship in the order listed, but each one may end up as several smaller patch releases depending on how the work breaks down.
 
-### Milestone: Marketing-ready
+### Milestone: Marketing-ready (shipped in v0.7.0)
 
 Typed subscriber data + the first piece of segmentation, so SendDock stops being "send to everyone" and starts being a real marketing tool.
 
 - [x] Tags + segmentation — [#40](https://github.com/Arkhe-Systems/senddock/issues/40) — Core
 - [x] Custom fields for subscribers — [#72](https://github.com/Arkhe-Systems/senddock/issues/72) — Core
 - [x] Starter template library — [#73](https://github.com/Arkhe-Systems/senddock/issues/73) — Core
+
+### Milestone: Operability, audience & white-label (shipped in v0.8.0–v0.8.3)
+
+Analytics in Core, multi-replica safety, Prometheus metrics, multiple newsletters per project and branded unsubscribe pages.
+
+- [x] DNS deliverability check (SPF / DKIM / DMARC) — [#64](https://github.com/Arkhe-Systems/senddock/issues/64) — Pro — shipped as the Deliverability tab
+- [x] Branded unsubscribe pages (template type `page`) — [#105](https://github.com/Arkhe-Systems/senddock/issues/105) — Core
+- [x] Multiple newsletters per project with per-newsletter unsubscribe — [#106](https://github.com/Arkhe-Systems/senddock/issues/106) — Core
+- [x] Multi-replica broadcast leases, transactional account/workspace creation, SMTP TLS verification — [#110](https://github.com/Arkhe-Systems/senddock/issues/110), [#111](https://github.com/Arkhe-Systems/senddock/issues/111), [#112](https://github.com/Arkhe-Systems/senddock/issues/112), [#113](https://github.com/Arkhe-Systems/senddock/issues/113), [#114](https://github.com/Arkhe-Systems/senddock/issues/114), [#116](https://github.com/Arkhe-Systems/senddock/issues/116), [#117](https://github.com/Arkhe-Systems/senddock/issues/117), [#121](https://github.com/Arkhe-Systems/senddock/issues/121) — Core
+
+---
+
+### Milestone: Least privilege (v0.9 — active target)
+
+0.8.x made SendDock honest to **operate**; 0.9 makes it honest to **trust at scale** ([Discussion #104](https://github.com/Arkhe-Systems/senddock/discussions/104)). Every actor — API key, user role, database connection, outbound dialer — gets only the permissions it needs, paired with account recovery and operational rescue tooling. Work executes in the phases below so isolation tests land before authorization changes.
+
+#### Phase 0.9-A: Audit & correctness baseline
+- [x] Plain-text `multipart/alternative` rendition for outgoing mail — [#115](https://github.com/Arkhe-Systems/senddock/issues/115) — Core (on `v0.9`)
+- [x] Workspace-scoped audit log trail and failure reporting — [#118](https://github.com/Arkhe-Systems/senddock/issues/118) — Core / Pro (on `v0.9`)
+- [ ] Reject `page` templates on email send paths — [#119](https://github.com/Arkhe-Systems/senddock/issues/119) — Core
+- [ ] Write to the suppression list on bulk unsubscribe — [#120](https://github.com/Arkhe-Systems/senddock/issues/120) — Core
+- [ ] Dispatch webhook events on CSV import and bulk unsubscribe, and expose `subscriber.newsletter_unsubscribed` in the dashboard — [#125](https://github.com/Arkhe-Systems/senddock/issues/125), [#126](https://github.com/Arkhe-Systems/senddock/issues/126), [#127](https://github.com/Arkhe-Systems/senddock/issues/127) — Core
+- [ ] Broaden IMAP bounce fallback 5.x.x matching and suppress permanent 5xx errors outside `RCPT` — [#122](https://github.com/Arkhe-Systems/senddock/issues/122), [#123](https://github.com/Arkhe-Systems/senddock/issues/123) — Core
+- [ ] Prevent campaigns from staying in `sending` when broadcast jobs settle before the campaign link is written — [#124](https://github.com/Arkhe-Systems/senddock/issues/124) — Core
+
+#### Phase 0.9-B: Supply-chain & outbound network boundary
+- [ ] Supply-chain scanning (Dependabot, `govulncheck`, Trivy image scan) and security disclosure policy (`SECURITY.md`, `security.txt`) — [#99](https://github.com/Arkhe-Systems/senddock/issues/99) — Core / Pro / SDK
+- [ ] SSRF protection for user-supplied destinations (webhooks, SMTP, IMAP) at save and dial time, with an audited self-host override — [#97](https://github.com/Arkhe-Systems/senddock/issues/97) — Core
+
+#### Phase 0.9-C: Isolation & role-capability harness
+- [ ] Cross-project and cross-workspace isolation test suite + role capability matrix (`owner`, `admin`, `developer`, `viewer`) enforced in CI against Postgres — [#100](https://github.com/Arkhe-Systems/senddock/issues/100) — Core
+
+#### Phase 0.9-D: Secrets hygiene, scoped API keys & 0.8 deprecations
+- [ ] Separate signing (`JWT_SECRET`) and encryption (`ENCRYPTION_KEY` / `ENCRYPTION_KEYS`) secrets with versioned ciphertext and lazy rotation — [#98](https://github.com/Arkhe-Systems/senddock/issues/98) — Core
+- [ ] Scoped API keys (`scopes` per key, unified with `requireCap`, opening project CRUD endpoints to keys and SDKs, with dashboard presets) — [#96](https://github.com/Arkhe-Systems/senddock/issues/96) — Core
+- [ ] Remove deprecated v0.8.0 environment fallbacks (`PUBLIC_URL` and `SENDDOCK_LICENSE_KEY` on self-hosted; `DEPLOYMENT_MODE` in favor of `CLOUD`) — Core
+
+#### Phase 0.9-E: Account recovery, DB least privilege & ops CLI
+- [ ] Password reset flow (email token recovery for Cloud and system-mailer self-hosted instances, plus login UI) — Core / Cloud
+- [ ] Database least privilege: split migration (`MIGRATIONS_DATABASE_URL`, DDL) and runtime (`DATABASE_URL`, DML-only) Postgres roles — [#101](https://github.com/Arkhe-Systems/senddock/issues/101) — Core
+- [ ] `senddock-cli` v1 (admin creation & password reset, migrations, license activation, health check) bundled in the Docker image — [#76](https://github.com/Arkhe-Systems/senddock/issues/76) — Core
+
+#### Ecosystem (separate repos, independent cadence)
+- [x] Official TypeScript / Node.js SDK (`@senddock/sdk`) — `senddock-js`
+- [ ] Official Python SDK (`senddock` on PyPI) — [#102](https://github.com/Arkhe-Systems/senddock/issues/102)
+- [ ] Official Java SDK (`dev.senddock` on Maven Central) — [#103](https://github.com/Arkhe-Systems/senddock/issues/103)
+
+---
 
 ### Milestone: Acquisition
 
@@ -141,13 +189,13 @@ Lower the friction of bringing users and existing subscriber lists into the plat
 - [ ] Google OAuth sign-in — [#70](https://github.com/Arkhe-Systems/senddock/issues/70) — Core
 - [ ] Migration wizard (Mailchimp / EmailOctopus / ConvertKit) — [#74](https://github.com/Arkhe-Systems/senddock/issues/74) — Core
 - [ ] Embeddable signup form widget — [#75](https://github.com/Arkhe-Systems/senddock/issues/75) — Core
+- [ ] Double opt-in (subscription confirmation flow) — [#92](https://github.com/Arkhe-Systems/senddock/issues/92) — Core
 
 ### Milestone: Trust + automation foundation
 
 What teams evaluate before committing their list. Plus the first phase of drips — linear sequences cover most automation demand on their own.
 
 - [ ] Drip automations · Phase 1: linear sequences — [#77](https://github.com/Arkhe-Systems/senddock/issues/77) — Pro
-- [x] DNS deliverability check (SPF / DKIM / DMARC) — [#64](https://github.com/Arkhe-Systems/senddock/issues/64) — Pro — shipped as the Deliverability tab
 - [ ] GDPR / data subject tools — [#46](https://github.com/Arkhe-Systems/senddock/issues/46) — Core
 
 ### Milestone: Automation parity
@@ -161,7 +209,6 @@ Closes the marketing-automation gap with EmailOctopus and Mailchimp.
 
 Picked up as demand surfaces or as bandwidth allows.
 
-- [ ] `senddock-cli` (admin & ops CLI) — [#76](https://github.com/Arkhe-Systems/senddock/issues/76) — Core
 - [ ] Multi-distro support for the one-line installer (Debian, Fedora, RHEL, openSUSE) — [#79](https://github.com/Arkhe-Systems/senddock/issues/79) — Core. Arch shipped in v0.6.8 ([#81](https://github.com/Arkhe-Systems/senddock/issues/81)); macOS tracked separately ([#82](https://github.com/Arkhe-Systems/senddock/issues/82)).
 - [ ] Custom tracking domain / white-label — [#45](https://github.com/Arkhe-Systems/senddock/issues/45) — Pro / Enterprise
 - [ ] Send-time heatmap and recommendation — [#51](https://github.com/Arkhe-Systems/senddock/issues/51) — Pro
