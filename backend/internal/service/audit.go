@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"log/slog"
 	"net"
 	"net/http"
 	"strings"
@@ -43,7 +44,7 @@ func (s *AuditService) Log(ctx context.Context, entry AuditEntry) {
 			meta = encoded
 		}
 	}
-	_, _ = s.queries.CreateAuditEntry(ctx, db.CreateAuditEntryParams{
+	if _, err := s.queries.CreateAuditEntry(ctx, db.CreateAuditEntryParams{
 		ProjectID:   entry.ProjectID,
 		WorkspaceID: entry.WorkspaceID,
 		UserID:      entry.UserID,
@@ -53,7 +54,9 @@ func (s *AuditService) Log(ctx context.Context, entry AuditEntry) {
 		Metadata:    meta,
 		IpAddress:   parseInet(entry.IPAddress),
 		UserAgent:   nullIfEmpty(entry.UserAgent),
-	})
+	}); err != nil {
+		slog.Error("failed to write audit entry", "action", entry.Action, "user_id", entry.UserID.UUID, "error", err)
+	}
 }
 
 func (s *AuditService) LogFromRequest(r *http.Request, projectID, userID, action, targetType, targetID string, metadata map[string]any) {
