@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"log/slog"
 	"net"
 	"net/http"
 	"strings"
@@ -43,7 +44,10 @@ func (s *AuditService) Log(ctx context.Context, entry AuditEntry) {
 			meta = encoded
 		}
 	}
-	_, _ = s.queries.CreateAuditEntry(ctx, db.CreateAuditEntryParams{
+	// Auditing never breaks the operation it audits, so the error is reported and dropped.
+	// Dropping it silently is worse than either: a trail with holes in it still reads as
+	// complete, and an operator has no way to learn that entries stopped being written.
+	if _, err := s.queries.CreateAuditEntry(ctx, db.CreateAuditEntryParams{
 		ProjectID:   entry.ProjectID,
 		WorkspaceID: entry.WorkspaceID,
 		UserID:      entry.UserID,
@@ -53,7 +57,9 @@ func (s *AuditService) Log(ctx context.Context, entry AuditEntry) {
 		Metadata:    meta,
 		IpAddress:   parseInet(entry.IPAddress),
 		UserAgent:   nullIfEmpty(entry.UserAgent),
-	})
+	}); err != nil {
+		slog.Error("failed to write audit entry", "action", entry.Action, "user_id", entry.UserID.UUID, "error", err)
+	}
 }
 
 func (s *AuditService) LogFromRequest(r *http.Request, projectID, userID, action, targetType, targetID string, metadata map[string]any) {

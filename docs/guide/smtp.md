@@ -78,14 +78,19 @@ If the diagnostic shows everything BLOCKED (or only `25` open with no banner), t
 
 4. **Cloud SMTP relay.** Keep SendDock at home but spin up a tiny VPS ($4/mo on Hetzner) running Postfix in relay mode. SendDock → relay over a non-blocked port → relay forwards to your real provider on 587. Adds complexity but keeps email infra self-hosted.
 
-5. **Local development only — use [Mailpit](https://mailpit.axllent.org/)** as a fake SMTP catcher. Accepts any auth on `localhost:1025`, shows captured emails in a web UI. Useful for the demo case but obviously doesn't deliver to real recipients:
+5. **Local development only — use [Mailpit](https://mailpit.axllent.org/)** as a fake SMTP catcher. It captures everything you send and shows it in a web UI, without delivering to real recipients:
    ```bash
    sudo docker run -d --name mailpit \
      --network senddock_default \
      -p 8025:8025 \
-     axllent/mailpit
+     axllent/mailpit \
+     --smtp-auth-accept-any --smtp-auth-allow-insecure
    ```
-   Then in SMTP Settings: Host `mailpit`, Port `1025`, no auth. Inspect captured mail at `http://your-host:8025`.
+   Then in SMTP Settings: Host `mailpit`, Port `1025`, and any username and password — those two flags make Mailpit accept whatever you type. Inspect captured mail at `http://your-host:8025`.
+
+   ::: warning Both flags, and credentials you make up
+   Started without those flags, Mailpit does not advertise `AUTH` and answers the command with `502 Command not implemented`, so every send fails with `smtp auth failed`. And SendDock requires a username and password before it sends at all, so leaving them empty stops at "smtp not configured" instead. Fill in both with anything.
+   :::
 
 ## Self-hosted mail server — opening extra ports
 

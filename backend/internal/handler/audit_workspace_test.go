@@ -45,6 +45,32 @@ func auditTestDB(t *testing.T) (*sql.DB, *db.Queries) {
 	return conn, db.New(conn)
 }
 
+// failInsertsIntoAudit makes every audit write fail, which is how the contract below is
+// checked without breaking the database for anything else.
+func failInsertsIntoAudit(t *testing.T, conn *sql.DB) {
+	t.Helper()
+
+	const trigger = "senddock_test_fail_audit_insert"
+	drop := func() {
+		_, _ = conn.ExecContext(context.Background(), `DROP TRIGGER IF EXISTS `+trigger+` ON audit_log`)
+		_, _ = conn.ExecContext(context.Background(), `DROP FUNCTION IF EXISTS `+trigger+`()`)
+	}
+	drop()
+
+	if _, err := conn.ExecContext(context.Background(),
+		`CREATE FUNCTION `+trigger+`() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION 'audit write forced to fail'; END; $$ LANGUAGE plpgsql`,
+	); err != nil {
+		t.Fatalf("create trigger function: %v", err)
+	}
+	if _, err := conn.ExecContext(context.Background(),
+		`CREATE TRIGGER `+trigger+` BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION `+trigger+`()`,
+	); err != nil {
+		drop()
+		t.Fatalf("create trigger: %v", err)
+	}
+	t.Cleanup(drop)
+}
+
 func TestAWorkspaceActionIsAuditedAgainstItsWorkspace(t *testing.T) {
 	conn, queries := auditTestDB(t)
 
@@ -173,5 +199,75 @@ func TestAProjectActionIsAuditedAgainstItsProject(t *testing.T) {
 	}
 	if auditedWorkspace.Valid {
 		t.Errorf("audited workspace = %v, want none", auditedWorkspace)
+	}
+}
+
+// Auditing is a record of what happened, not a step the operation depends on. A failing
+// audit write must not take the action down with it — the alternative is that a full disk,
+// a bad migration or a lock on one table stops people from renaming a workspace.
+func TestARenamedWorkspaceSurvivesAFailedAuditWrite(t *testing.T) {
+	conn, queries := auditTestDB(t)
+	ctx := context.Background()
+
+	var userID, workspaceID uuid.UUID
+	if err := conn.QueryRowContext(ctx,
+		`INSERT INTO users (email, name) VALUES ($1, $2) RETURNING id`,
+		"audit-fail-"+uuid.NewString()+"@example.test", "Audit Fail Test",
+	).Scan(&userID); err != nil {
+		t.Fatalf("insert user: %v", err)
+	}
+	if err := conn.QueryRowContext(ctx,
+		`INSERT INTO workspaces (name, created_by) VALUES ($1, $2) RETURNING id`,
+		"audit-fail-test", userID,
+	).Scan(&workspaceID); err != nil {
+		t.Fatalf("insert workspace: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = conn.ExecContext(ctx, `DELETE FROM workspaces WHERE id = $1`, workspaceID)
+		_, _ = conn.ExecContext(ctx, `DELETE FROM users WHERE id = $1`, userID)
+	})
+	if _, err := conn.ExecContext(ctx,
+		`INSERT INTO workspace_members (workspace_id, user_id, role) VALUES ($1, $2, 'owner')`,
+		workspaceID, userID,
+	); err != nil {
+		t.Fatalf("insert membership: %v", err)
+	}
+
+	h := NewWorkspaceHandler(service.NewWorkspaceService(queries, conn), service.NewProjectService(queries, "test-encryption-secret"))
+	h.Audit = service.NewAuditService(queries)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("PATCH /api/v1/workspaces/{id}", h.Rename)
+
+	failInsertsIntoAudit(t, conn)
+
+	req := httptest.NewRequest(http.MethodPatch, "/api/v1/workspaces/"+workspaceID.String(),
+		strings.NewReader(`{"name":"renamed with no audit row"}`))
+	req = req.WithContext(context.WithValue(req.Context(), auth.UserIDKey, userID.String()))
+
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("rename status = %d with the audit write failing, want 200 (body %s)", rec.Code, rec.Body.String())
+	}
+
+	var name string
+	if err := conn.QueryRowContext(ctx, `SELECT name FROM workspaces WHERE id = $1`, workspaceID).Scan(&name); err != nil {
+		t.Fatalf("read back workspace: %v", err)
+	}
+	if name != "renamed with no audit row" {
+		t.Errorf("workspace name = %q, want the rename to have gone through", name)
+	}
+
+	// Without this the test would pass on a run where nothing failed at all: the audit row
+	// has to be missing for the assertion above to mean anything.
+	var auditRows int
+	if err := conn.QueryRowContext(ctx,
+		`SELECT count(*) FROM audit_log WHERE action = 'workspace.rename' AND workspace_id = $1`, workspaceID,
+	).Scan(&auditRows); err != nil {
+		t.Fatalf("count audit rows: %v", err)
+	}
+	if auditRows != 0 {
+		t.Fatalf("the audit write was expected to fail and did not (%d rows), so this test proved nothing", auditRows)
 	}
 }

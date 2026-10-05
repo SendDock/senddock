@@ -45,7 +45,7 @@ The official `ghcr.io/arkhe-systems/senddock` image is built for both **`linux/a
 ::: warning Don't expect to send real emails from a laptop
 Most residential ISPs block outbound SMTP ports (25, 465, 587) at the network edge to prevent spam botnets. A SendDock instance on your home network cannot deliver mail through any external SMTP provider — including Gmail, SES, Mailgun, or your own Mailcow if it lives elsewhere. **SendDock in production must run on a cloud server (DigitalOcean, Hetzner, AWS, etc.) where outbound SMTP is unblocked.**
 
-For local development and evaluation, ship `make mail` (or any other [Mailpit](https://mailpit.axllent.org/)-like catcher) and configure SendDock to talk to it on `localhost:1025`. See the [SMTP guide](/guide/smtp) for the workaround details.
+For local development and evaluation, run a catcher like [Mailpit](https://mailpit.axllent.org/) and point SendDock at it on `localhost:1025` — the [SMTP guide](/guide/smtp) has the exact command, including the two flags Mailpit needs before it will accept a send.
 :::
 
 ---
