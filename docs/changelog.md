@@ -28,6 +28,8 @@ Pre-1.0 minor releases may contain breaking changes — check the version's note
 
 - **Page templates can no longer be sent as email.** Only the dashboard picker filtered out `type: "page"` templates; the API paths (`/send`, `/send/batch`, `/broadcast` and campaign creation/update) accepted any template ID in the project and would mail a hosted unsubscribe page to recipients. Every send and campaign path now requires an `email` template and returns `400` otherwise.
 
+- **In-session SMTP 5xx rejections during `MAIL FROM` and `DATA` are now classified as bounces.** Only `RCPT TO` checked for a `5xx` reply, so a permanent rejection after the message body (`554` on `DATA` close) or on the envelope sender was recorded as `failed`, skipped the suppression list, and caused broadcast workers to retry a permanent failure three times. Any `5xx` during `MAIL FROM`, `RCPT TO` or `DATA` now marks the log `bounced`, suppresses the recipient and stops broadcast retries.
+
 ## [0.8.3] — 2026-09-27
 
 ### Removed

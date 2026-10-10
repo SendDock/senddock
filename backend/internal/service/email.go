@@ -99,6 +99,7 @@ type EmailService struct {
 	hooks        WebhookDispatcher
 	suppressions *SuppressionService
 	segments     *SegmentService
+	deliverFn    func(host, addr, user, pass, from, to string, msg []byte, implicitTLS bool, connectTimeout, sessionTimeout time.Duration, allowInsecureTLS bool) error
 }
 
 func (s *EmailService) SetSegmentService(seg *SegmentService) {
@@ -165,6 +166,7 @@ func requireEmailTemplate(template db.Template) error {
 type BounceError struct {
 	Code    int
 	Message string
+	Stage   string
 	err     error
 }
 
@@ -177,6 +179,10 @@ func (e *BounceError) Unwrap() error {
 }
 
 func classifyBounce(err error) *BounceError {
+	return classifyBounceStage(err, "rcpt")
+}
+
+func classifyBounceStage(err error, stage string) *BounceError {
 	if err == nil {
 		return nil
 	}
@@ -187,7 +193,7 @@ func classifyBounce(err error) *BounceError {
 	if protoErr.Code < 500 || protoErr.Code >= 600 {
 		return nil
 	}
-	return &BounceError{Code: protoErr.Code, Message: protoErr.Msg, err: protoErr}
+	return &BounceError{Code: protoErr.Code, Message: protoErr.Msg, Stage: stage, err: protoErr}
 }
 
 func (s *EmailService) logSuppressed(ctx context.Context, projectID uuid.UUID, subscriberID, templateID uuid.NullUUID, newsletterID uuid.NullUUID, to, subject string, broadcastID uuid.NullUUID) {
@@ -230,6 +236,9 @@ func (s *EmailService) SendToSubscriber(ctx context.Context, projectID, subscrib
 	template, err := s.queries.GetTemplateByID(ctx, db.GetTemplateByIDParams{ID: tid, ProjectID: pid})
 	if err != nil {
 		return SendResult{}, errors.New("template not found")
+	}
+	if err := requireEmailTemplate(template); err != nil {
+		return SendResult{}, err
 	}
 
 	sid, err := uuid.Parse(subscriberID)
@@ -432,6 +441,9 @@ func (s *EmailService) SendBroadcastJob(ctx context.Context, job db.BroadcastJob
 	template, err := s.queries.GetTemplateByID(ctx, db.GetTemplateByIDParams{ID: broadcast.TemplateID, ProjectID: job.ProjectID})
 	if err != nil {
 		return BroadcastJobOutcomeTransientError, fmt.Errorf("template lookup: %w", err)
+	}
+	if err := requireEmailTemplate(template); err != nil {
+		return BroadcastJobOutcomeBounced, err
 	}
 
 	sub, err := s.queries.GetSubscriberByID(ctx, db.GetSubscriberByIDParams{ID: job.SubscriberID, ProjectID: job.ProjectID})
@@ -878,7 +890,11 @@ func (s *EmailService) trackAndSend(ctx context.Context, project db.Project, pro
 		metrics.EmailFailed("bounce")
 		s.markLogStatus(ctx, projectID, logID, "bounced", sendErr)
 		if s.suppressions != nil {
-			source := fmt.Sprintf("smtp %d during rcpt: %s", bounce.Code, bounce.Message)
+			stage := bounce.Stage
+			if stage == "" {
+				stage = "rcpt"
+			}
+			source := fmt.Sprintf("smtp %d during %s: %s", bounce.Code, stage, bounce.Message)
 			_, _ = s.suppressions.Add(ctx, projectID, to, SuppressionReasonBounce, source)
 		}
 		s.dispatchBounceEvent(ctx, projectID, logID, to, subject, bounce)
@@ -1221,7 +1237,9 @@ func (s *EmailService) sendSMTPWithTimeouts(project db.Project, to, subject stri
 	msg := buildMIME(from, to, subject, unsubscribeURL, parts)
 
 	addr := fmt.Sprintf("%s:%d", host, port)
-
+	if s.deliverFn != nil {
+		return s.deliverFn(host, addr, user, pass, fromEmail, to, msg, port == 465, connectTimeout, sessionTimeout, project.SmtpAllowInsecureTls)
+	}
 	return deliverSMTP(host, addr, user, pass, fromEmail, to, msg, port == 465, connectTimeout, sessionTimeout, project.SmtpAllowInsecureTls)
 }
 
@@ -1366,6 +1384,11 @@ func deliverSMTP(host, addr, user, pass, from, to string, msg []byte, implicitTL
 		return fmt.Errorf("smtp set deadline failed: %w", err)
 	}
 
+	return deliverSMTPConn(conn, host, user, pass, from, to, msg, implicitTLS, allowInsecureTLS)
+}
+
+func deliverSMTPConn(conn net.Conn, host, user, pass, from, to string, msg []byte, implicitTLS, allowInsecureTLS bool) error {
+	tlsConfig := smtpTLSConfig(host, allowInsecureTLS)
 	client, err := smtp.NewClient(conn, host)
 	if err != nil {
 		return fmt.Errorf("smtp client failed: %w", err)
@@ -1389,11 +1412,14 @@ func deliverSMTP(host, addr, user, pass, from, to string, msg []byte, implicitTL
 	}
 
 	if err = client.Mail(from); err != nil {
+		if be := classifyBounceStage(err, "mail"); be != nil {
+			return be
+		}
 		return fmt.Errorf("smtp mail from failed: %w", err)
 	}
 
 	if err = client.Rcpt(to); err != nil {
-		if be := classifyBounce(err); be != nil {
+		if be := classifyBounceStage(err, "rcpt"); be != nil {
 			return be
 		}
 		return fmt.Errorf("smtp rcpt to failed: %w", err)
@@ -1401,12 +1427,21 @@ func deliverSMTP(host, addr, user, pass, from, to string, msg []byte, implicitTL
 
 	w, err := client.Data()
 	if err != nil {
+		if be := classifyBounceStage(err, "data"); be != nil {
+			return be
+		}
 		return fmt.Errorf("smtp data failed: %w", err)
 	}
 	if _, err = w.Write(msg); err != nil {
+		if be := classifyBounceStage(err, "data"); be != nil {
+			return be
+		}
 		return fmt.Errorf("smtp write failed: %w", err)
 	}
 	if err = w.Close(); err != nil {
+		if be := classifyBounceStage(err, "data"); be != nil {
+			return be
+		}
 		return fmt.Errorf("smtp close failed: %w", err)
 	}
 

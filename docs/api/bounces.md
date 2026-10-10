@@ -7,7 +7,7 @@ There are two configurable sources, plus a public ingest endpoint that providers
 - **IMAP poller** — SendDock logs into a bounce mailbox every 5 minutes and parses DSNs.
 - **Webhook ingest** — SendDock receives a POST from your provider (Mailgun, SES via SNS, custom).
 
-In-session SMTP detection (5xx on `RCPT TO`) needs no configuration and is always on.
+In-session SMTP detection (5xx on `MAIL FROM`, `RCPT TO` or `DATA`) needs no configuration and is always on.
 
 All three detection sources write the same suppression reason `bounce`; the parsed SMTP/DSN text is stored in the entry's `source` field (e.g. `webhook ingest: 550 …`, `imap dsn poll`, or `smtp 550 during rcpt: …`).
 
