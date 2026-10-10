@@ -142,7 +142,17 @@ type SendResult struct {
 	BroadcastID *uuid.UUID `json:"broadcast_id,omitempty"`
 }
 
-var ErrRecipientSuppressed = errors.New("recipient is on the project suppression list")
+var (
+	ErrRecipientSuppressed = errors.New("recipient is on the project suppression list")
+	ErrNotEmailTemplate    = errors.New("only email templates can be sent; page templates are for hosted pages")
+)
+
+func requireEmailTemplate(template db.Template) error {
+	if template.Type != "email" {
+		return ErrNotEmailTemplate
+	}
+	return nil
+}
 
 type BounceError struct {
 	Code    int
@@ -279,6 +289,9 @@ func (s *EmailService) Broadcast(ctx context.Context, projectID, templateID, sub
 	template, err := s.queries.GetTemplateByID(ctx, db.GetTemplateByIDParams{ID: tid, ProjectID: pid})
 	if err != nil {
 		return SendResult{}, errors.New("template not found")
+	}
+	if err := requireEmailTemplate(template); err != nil {
+		return SendResult{}, err
 	}
 
 	if segmentID != "" && newsletterID != "" {
@@ -573,6 +586,9 @@ func (s *EmailService) SendWithTemplate(ctx context.Context, projectID, template
 	template, err := s.queries.GetTemplateByID(ctx, db.GetTemplateByIDParams{ID: tid, ProjectID: pid})
 	if err != nil {
 		return errors.New("template not found")
+	}
+	if err := requireEmailTemplate(template); err != nil {
+		return err
 	}
 
 	if s.suppressions != nil && s.suppressions.IsSuppressed(ctx, pid, to) {

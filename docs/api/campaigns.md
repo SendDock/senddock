@@ -22,7 +22,7 @@ POST /api/v1/projects/{id}/campaigns
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `template_id` | string (UUID) | Yes | The template to send. |
+| `template_id` | string (UUID) | Yes | The `email` template to send (`page` templates return `400`). |
 | `name` | string | Yes | Campaign name for the dashboard list. |
 | `scheduled_at` | string (RFC 3339) | Yes | When to send. Must be in the future. |
 | `subject` | string | No | Overrides the template's stored subject for this campaign only. |

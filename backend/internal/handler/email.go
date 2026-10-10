@@ -282,6 +282,12 @@ func (h *EmailHandler) BatchSend(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		err := h.emailService.SendWithTemplate(service.WithAuthorizedProject(r.Context(), projectID), projectID, req.TemplateID, rcpt.To, req.Subject, rcpt.Data, req.HtmlFields)
+		if errors.Is(err, service.ErrNotEmailTemplate) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(errorResponse{Error: err.Error()})
+			return
+		}
 		if errors.Is(err, service.ErrRecipientSuppressed) {
 			suppressed++
 			continue
