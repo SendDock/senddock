@@ -19,9 +19,9 @@ SendDock only suppresses on hard (`5xx`) bounces. Soft bounces are surfaced in t
 
 There are three sources, all enabled per project. Each one writes to the suppression list; only in-session 5xx bounces fire the `email.bounced` webhook (IMAP and webhook ingestion update the log and suppression list silently).
 
-### 1. In-session SMTP (5xx during RCPT TO)
+### 1. In-session SMTP (5xx during MAIL FROM, RCPT TO or DATA)
 
-This one is on by default and needs zero configuration. When SendDock talks to your SMTP server and the destination MTA rejects a recipient with a 5xx code on `RCPT TO`, SendDock catches the response in the same connection, classifies it, and:
+This one is on by default and needs zero configuration. When SendDock talks to your SMTP server and the destination MTA rejects a message with a 5xx code during `MAIL FROM`, `RCPT TO` or `DATA`, SendDock catches the response in the same connection, classifies it, and:
 
 - marks the email log row as `bounced`,
 - adds the recipient to the project suppression list with reason `bounce`,
@@ -66,7 +66,7 @@ The poller never deletes messages — it only flags them as read.
 
 | Where | What you see |
 |---|---|
-| **Email logs** | The send row's status changes from `sent` to `bounced`. |
+| **Email logs** | The send row's status is marked `bounced` (immediately for in-session 5xx, or updated from `sent` to `bounced` for webhook/IMAP reports). |
 | **Suppression list** | Bounced recipients appear with reason `bounce`. |
 | **Project stats** | `bounced` and `suppressed` are tracked separately from `sent` and `failed` in the stats endpoint. The dashboard's Overview cards cover Total Emails, Sent and Failed. |
 | **Webhooks** | `email.bounced` fires once with `{ "log_id", "to_email", "subject", "smtp_code", "reason" }` in `data`. |
