@@ -76,7 +76,7 @@ The subscriber-send variant instead returns its usual count shape, with the reci
 The send is recorded with status `suppressed` in the email log; no SMTP attempt is made. When present, `suppressed` always counts in addition to `sent` + `failed`.
 
 ::: info Error contract
-A `template_id` or `subscriber_id` that doesn't exist in the project, a project without SMTP configured, or a subscriber that isn't `active` all return `400` with an `{error}` body. An SMTP-level rejection (the relay refused the message) also returns `400` with the SMTP error in `{error}` — the log row is marked `failed` or `bounced` accordingly. Only suppression is a "soft" `200`, shown above.
+A `template_id` or `subscriber_id` that doesn't exist in the project, a `template_id` whose `type` is not `email` (such as a `page` template), a project without SMTP configured, or a subscriber that isn't `active` all return `400` with an `{error}` body. An SMTP-level rejection (the relay refused the message) also returns `400` with the SMTP error in `{error}` — the log row is marked `failed` or `bounced` accordingly. Only suppression is a "soft" `200`, shown above.
 :::
 
 ## Batch Send

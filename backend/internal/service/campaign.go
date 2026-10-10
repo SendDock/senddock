@@ -50,10 +50,14 @@ func (s *CampaignService) Create(ctx context.Context, projectID, templateID, nam
 		return db.Campaign{}, err
 	}
 
-	if _, err := s.queries.GetTemplateByID(ctx, db.GetTemplateByIDParams{ID: tid, ProjectID: pid}); err != nil {
+	template, err := s.queries.GetTemplateByID(ctx, db.GetTemplateByIDParams{ID: tid, ProjectID: pid})
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return db.Campaign{}, errors.New("template not found in this project")
 		}
+		return db.Campaign{}, err
+	}
+	if err := requireEmailTemplate(template); err != nil {
 		return db.Campaign{}, err
 	}
 	if nlid.Valid {
@@ -101,10 +105,14 @@ func (s *CampaignService) Update(ctx context.Context, campaignID, projectID, tem
 		return db.Campaign{}, err
 	}
 
-	if _, err := s.queries.GetTemplateByID(ctx, db.GetTemplateByIDParams{ID: tid, ProjectID: pid}); err != nil {
+	template, err := s.queries.GetTemplateByID(ctx, db.GetTemplateByIDParams{ID: tid, ProjectID: pid})
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return db.Campaign{}, errors.New("template not found in this project")
 		}
+		return db.Campaign{}, err
+	}
+	if err := requireEmailTemplate(template); err != nil {
 		return db.Campaign{}, err
 	}
 	if nlid.Valid {
