@@ -58,9 +58,9 @@ The poller logs in over TLS, scans for unread messages, and for each one:
 
 1. Looks for an **RFC 3464 DSN** — a Delivery Status Notification, the machine-readable bounce report mail servers send back to the sender — which carries the failed address in a `Final-Recipient:` header (e.g. `Final-Recipient: rfc822;user@example.com`).
 2. Falls back to scanning the body for a `5xx` line and extracting the address there.
-3. Adds the recipient to the suppression list and marks the IMAP message `\Seen` so it's not processed again.
+3. When a bounce recipient is found, adds it to the suppression list and marks that IMAP message `\Seen` so it's not processed again. Unread messages that don't match a bounce are left unread.
 
-The poller never deletes messages — it only flags them as read.
+The poller never deletes messages — it only flags matched bounce messages as read.
 
 ## Where bounces show up
 

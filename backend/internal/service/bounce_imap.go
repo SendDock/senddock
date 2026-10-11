@@ -131,7 +131,23 @@ func (p *BounceIMAPPoller) pollProject(ctx context.Context, project db.Project) 
 		return fmt.Errorf("fetch: %w", err)
 	}
 
+	seenSet, processed := p.processFetchedMessages(ctx, project, msgs)
+	if processed > 0 {
+		slog.Info("bounce imap poller processed project",
+			"project_id", project.ID,
+			"messages_with_suppressions", processed,
+			"messages_total", len(uids))
+		storeFlags := imap.StoreFlags{Op: imap.StoreFlagsAdd, Silent: true, Flags: []imap.Flag{imap.FlagSeen}}
+		if err := client.Store(seenSet, &storeFlags, nil).Close(); err != nil {
+			return fmt.Errorf("store seen: %w", err)
+		}
+	}
+	return nil
+}
+
+func (p *BounceIMAPPoller) processFetchedMessages(ctx context.Context, project db.Project, msgs []*imapclient.FetchMessageBuffer) (imap.SeqSet, int) {
 	processed := 0
+	seenSet := imap.SeqSet{}
 	for _, msg := range msgs {
 		body := msg.FindBodySection(&imap.FetchItemBodySection{})
 		if len(body) == 0 {
@@ -151,28 +167,17 @@ func (p *BounceIMAPPoller) pollProject(ctx context.Context, project db.Project) 
 		}
 		if len(emails) > 0 {
 			processed++
+			seenSet.AddNum(msg.SeqNum)
 		}
 	}
-
-	if processed > 0 {
-		slog.Info("bounce imap poller processed project",
-			"project_id", project.ID,
-			"messages_with_suppressions", processed,
-			"messages_total", len(uids))
-	}
-
-	storeFlags := imap.StoreFlags{Op: imap.StoreFlagsAdd, Silent: true, Flags: []imap.Flag{imap.FlagSeen}}
-	if err := client.Store(seqSet, &storeFlags, nil).Close(); err != nil {
-		return fmt.Errorf("store seen: %w", err)
-	}
-	return nil
+	return seenSet, processed
 }
 
 var (
 	dsnRecipientRE = regexp.MustCompile(`(?im)^Final-Recipient:\s*[^;]+;\s*([^\s<>]+@[^\s<>]+)`)
 	angleEmailRE   = regexp.MustCompile(`<([^@<>\s]+@[^@<>\s]+)>`)
 	bareEmailRE    = regexp.MustCompile(`[\w._%+-]+@[\w.-]+\.[A-Za-z]{2,}`)
-	hardBounceLine = regexp.MustCompile(`(?i)\b(550|551|553|554|521)\b`)
+	hardBounceLine = regexp.MustCompile(`(?i)\b5\d\d\b`)
 )
 
 func extractBounceRecipients(raw string) []string {

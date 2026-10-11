@@ -155,7 +155,7 @@ Analytics in Core, multi-replica safety, Prometheus metrics, multiple newsletter
 - [x] Reject `page` templates on email send paths — [#119](https://github.com/Arkhe-Systems/senddock/issues/119) — Core (on `v0.9`)
 - [ ] Write to the suppression list on bulk unsubscribe — [#120](https://github.com/Arkhe-Systems/senddock/issues/120) — Core
 - [ ] Dispatch webhook events on CSV import and bulk unsubscribe, and expose `subscriber.newsletter_unsubscribed` in the dashboard — [#125](https://github.com/Arkhe-Systems/senddock/issues/125), [#126](https://github.com/Arkhe-Systems/senddock/issues/126), [#127](https://github.com/Arkhe-Systems/senddock/issues/127) — Core
-- [ ] Broaden IMAP bounce fallback 5.x.x matching and suppress permanent 5xx errors outside `RCPT` — [#122](https://github.com/Arkhe-Systems/senddock/issues/122), [#123](https://github.com/Arkhe-Systems/senddock/issues/123) — Core
+- [x] Broaden IMAP bounce fallback 5.x.x matching and suppress permanent 5xx errors outside `RCPT` — [#122](https://github.com/Arkhe-Systems/senddock/issues/122), [#123](https://github.com/Arkhe-Systems/senddock/issues/123) — Core (on `v0.9`)
 - [ ] Prevent campaigns from staying in `sending` when broadcast jobs settle before the campaign link is written — [#124](https://github.com/Arkhe-Systems/senddock/issues/124) — Core
 
 #### Phase 0.9-B: Supply-chain & outbound network boundary

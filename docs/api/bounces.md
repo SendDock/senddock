@@ -62,7 +62,7 @@ PUT /api/v1/projects/{id}/bounce-imap
 | `password` | string | yes if `enabled` (or omit to keep current) | Encrypted at rest with the same key SMTP uses. |
 | `folder` | string | no (default `INBOX`) | Folder name to scan. |
 
-The poller logs in over TLS, scans for unread messages, parses `Final-Recipient` (RFC 3464) first, falls back to scanning for `5xx` lines, adds matched recipients to the [suppression list](./suppressions), and marks each message `\Seen` (never deletes).
+The poller logs in over TLS, scans for unread messages, parses `Final-Recipient` (RFC 3464) first, falls back to scanning for `5xx` lines, adds matched recipients to the [suppression list](./suppressions), and marks each matched bounce message `\Seen` (unrelated unread messages are left unread, and nothing is ever deleted).
 
 ### Response
 
