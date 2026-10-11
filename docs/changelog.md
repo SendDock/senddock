@@ -30,6 +30,8 @@ Pre-1.0 minor releases may contain breaking changes — check the version's note
 
 - **In-session SMTP 5xx rejections during `MAIL FROM` and `DATA` are now classified as bounces.** Only `RCPT TO` checked for a `5xx` reply, so a permanent rejection after the message body (`554` on `DATA` close) or on the envelope sender was recorded as `failed`, skipped the suppression list, and caused broadcast workers to retry a permanent failure three times. Any `5xx` during `MAIL FROM`, `RCPT TO` or `DATA` now marks the log `bounced`, suppresses the recipient and stops broadcast retries.
 
+- **The IMAP bounce poller no longer marks non-bounce messages as read or misses `552`/`555` DSN lines.** Every unread message in the configured folder was marked `\Seen` even when no bounce recipient was found, and fallback line matching only looked for `521`, `550`, `551`, `553` and `554`. Only messages that yield a bounce recipient are marked `\Seen` now, and the fallback line matcher covers any `5xx` status code.
+
 ## [0.8.3] — 2026-09-27
 
 ### Removed
