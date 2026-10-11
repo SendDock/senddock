@@ -516,7 +516,10 @@ func (s *EmailService) SendBroadcastJob(ctx context.Context, job db.BroadcastJob
 }
 
 func (s *EmailService) RecoverInProgressBroadcasts(ctx context.Context) error {
-	return s.queries.ReconcileStuckBroadcasts(ctx)
+	if err := s.queries.ReconcileStuckBroadcasts(ctx); err != nil {
+		return err
+	}
+	return s.queries.ReconcileCompletedCampaigns(ctx)
 }
 
 func (s *EmailService) ListBroadcasts(ctx context.Context, projectID string, limit, offset int32, statusFilter, newsletterFilter string) ([]db.Broadcast, int64, error) {

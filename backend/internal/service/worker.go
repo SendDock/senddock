@@ -39,6 +39,9 @@ func (w *CampaignWorker) tick() {
 	}()
 
 	ctx := context.Background()
+	if err := w.queries.ReconcileCompletedCampaigns(ctx); err != nil {
+		slog.Error("campaign worker: reconcile completed campaigns failed", "error", err)
+	}
 	campaigns, err := w.queries.GetPendingCampaigns(ctx)
 	if err != nil {
 		slog.Error("campaign worker: list pending failed", "error", err)
@@ -102,6 +105,8 @@ func (w *CampaignWorker) ExecuteCampaign(ctx context.Context, campaign db.Campai
 			BroadcastID: uuid.NullUUID{UUID: *result.BroadcastID, Valid: true},
 		}); err != nil {
 			slog.Error("campaign link to broadcast failed", "campaign_id", campaign.ID, "broadcast_id", *result.BroadcastID, "error", err)
+		} else if err := w.queries.MarkCampaignDoneFromBroadcast(ctx, *result.BroadcastID); err != nil {
+			slog.Error("campaign completion check failed", "campaign_id", campaign.ID, "broadcast_id", *result.BroadcastID, "error", err)
 		}
 	}
 	slog.Info("campaign linked to broadcast", "campaign_id", campaign.ID, "broadcast_id", result.BroadcastID, "recipients_enqueued", result.Sent)

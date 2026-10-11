@@ -57,6 +57,18 @@ SET status = 'sent',
 FROM broadcasts b
 WHERE campaigns.broadcast_id = b.id
   AND b.id = @broadcast_id
+  AND b.status = 'completed'
+  AND campaigns.status = 'sending';
+
+-- name: ReconcileCompletedCampaigns :exec
+UPDATE campaigns
+SET status = 'sent',
+    sent_count = b.sent_count,
+    failed_count = b.failed_count,
+    sent_at = COALESCE(campaigns.sent_at, b.finished_at, NOW())
+FROM broadcasts b
+WHERE campaigns.broadcast_id = b.id
+  AND b.status = 'completed'
   AND campaigns.status = 'sending';
 
 -- name: DeleteCampaign :execrows

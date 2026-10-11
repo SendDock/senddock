@@ -265,11 +265,29 @@ SET status = 'sent',
 FROM broadcasts b
 WHERE campaigns.broadcast_id = b.id
   AND b.id = $1
+  AND b.status = 'completed'
   AND campaigns.status = 'sending'
 `
 
 func (q *Queries) MarkCampaignDoneFromBroadcast(ctx context.Context, broadcastID uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx, markCampaignDoneFromBroadcast, broadcastID)
+	return err
+}
+
+const reconcileCompletedCampaigns = `-- name: ReconcileCompletedCampaigns :exec
+UPDATE campaigns
+SET status = 'sent',
+    sent_count = b.sent_count,
+    failed_count = b.failed_count,
+    sent_at = COALESCE(campaigns.sent_at, b.finished_at, NOW())
+FROM broadcasts b
+WHERE campaigns.broadcast_id = b.id
+  AND b.status = 'completed'
+  AND campaigns.status = 'sending'
+`
+
+func (q *Queries) ReconcileCompletedCampaigns(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, reconcileCompletedCampaigns)
 	return err
 }
 
