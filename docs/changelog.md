@@ -32,6 +32,8 @@ Pre-1.0 minor releases may contain breaking changes — check the version's note
 
 - **The IMAP bounce poller no longer marks non-bounce messages as read or misses `552`/`555` DSN lines.** Every unread message in the configured folder was marked `\Seen` even when no bounce recipient was found, and fallback line matching only looked for `521`, `550`, `551`, `553` and `554`. Only messages that yield a bounce recipient are marked `\Seen` now, and the fallback line matcher covers any `5xx` status code.
 
+- **Campaigns whose broadcast finishes before the campaign row is linked no longer stay stuck in `sending`.** A small broadcast could finish all of its jobs before the campaign worker wrote `broadcast_id` onto the campaign row, so the broadcast completion check updated zero rows and left the campaign in `sending` forever. The worker now re-runs the completion check immediately after linking the broadcast, and startup recovery reconciles any `sending` campaign whose broadcast is already `completed`.
+
 ## [0.8.3] — 2026-09-27
 
 ### Removed
