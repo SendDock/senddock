@@ -38,6 +38,7 @@ const ALL_EVENTS = [
     { value: 'email.clicked', label: 'Email clicked', description: 'Fired the first time a recipient clicks a tracked link' },
     { value: 'subscriber.created', label: 'Subscriber created', description: 'Fired when a new subscriber is added' },
     { value: 'subscriber.unsubscribed', label: 'Subscriber unsubscribed', description: 'Fired when a subscriber opts out' },
+    { value: 'subscriber.newsletter_unsubscribed', label: 'Newsletter unsubscribed', description: 'Fired when a subscriber opts out of a single newsletter' },
 ]
 
 const props = defineProps<{ project: Project }>()
@@ -179,10 +180,6 @@ async function copySecret() {
     } catch {
         toast.error('Could not copy to clipboard')
     }
-}
-
-function eventLabel(value: string) {
-    return ALL_EVENTS.find(e => e.value === value)?.label ?? value
 }
 
 function fmtDate(iso: string) {

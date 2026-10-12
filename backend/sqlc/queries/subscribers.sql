@@ -92,10 +92,11 @@ DELETE FROM subscribers WHERE id = $1 AND project_id = $2;
 DELETE FROM subscribers 
 WHERE project_id = $1 AND id = ANY($2::uuid[]);
 
--- name: BulkUpdateSubscriberStatus :exec
-UPDATE subscribers 
-SET 
+-- name: BulkUpdateSubscriberStatus :many
+UPDATE subscribers
+SET
     status = $3,
-    unsubscribed_at = CASE WHEN $3 = 'unsubscribed' THEN NOW() ELSE unsubscribed_at END,
+    unsubscribed_at = CASE WHEN $3::varchar = 'unsubscribed' THEN NOW() ELSE unsubscribed_at END,
     updated_at = NOW()
-WHERE project_id = $1 AND id = ANY($2::uuid[]);
+WHERE project_id = $1 AND id = ANY($2::uuid[])
+RETURNING *;

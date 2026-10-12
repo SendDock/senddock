@@ -282,7 +282,7 @@ func (s *SubscriberService) BulkImport(ctx context.Context, projectID string, su
 			continue
 		}
 
-		_, err = s.queries.CreateSubscriber(ctx, db.CreateSubscriberParams{
+		created, err := s.queries.CreateSubscriber(ctx, db.CreateSubscriberParams{
 			ProjectID: pid,
 			Email:     normalized,
 			Name:      sub.Name,
@@ -296,6 +296,7 @@ func (s *SubscriberService) BulkImport(ctx context.Context, projectID string, su
 			continue
 		}
 		result.Imported++
+		s.dispatch(ctx, "subscriber.created", created)
 	}
 	return result, nil
 }
@@ -434,9 +435,22 @@ func (s *SubscriberService) BulkUpdateStatus(ctx context.Context, projectID stri
 		return nil
 	}
 
-	return s.queries.BulkUpdateSubscriberStatus(ctx, db.BulkUpdateSubscriberStatusParams{
+	updated, err := s.queries.BulkUpdateSubscriberStatus(ctx, db.BulkUpdateSubscriberStatusParams{
 		ProjectID: pid,
 		Column2:   uuids,
 		Status:    status,
 	})
+	if err != nil {
+		return err
+	}
+
+	if status == "unsubscribed" {
+		for _, sub := range updated {
+			if s.suppressions != nil {
+				_, _ = s.suppressions.Add(ctx, pid, sub.Email, SuppressionReasonUnsubscribe, "manual subscriber status change")
+			}
+			s.dispatch(ctx, "subscriber.unsubscribed", sub)
+		}
+	}
+	return nil
 }
