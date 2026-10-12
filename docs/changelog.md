@@ -34,6 +34,10 @@ Pre-1.0 minor releases may contain breaking changes — check the version's note
 
 - **Campaigns whose broadcast finishes before the campaign row is linked no longer stay stuck in `sending`.** A small broadcast could finish all of its jobs before the campaign worker wrote `broadcast_id` onto the campaign row, so the broadcast completion check updated zero rows and left the campaign in `sending` forever. The worker now re-runs the completion check immediately after linking the broadcast, and startup recovery reconciles any `sending` campaign whose broadcast is already `completed`.
 
+- **Bulk subscriber imports and bulk unsubscribes now match single-subscriber behavior.** Importing subscribers from CSV inserted the rows without firing `subscriber.created`, and unsubscribing selected subscribers in bulk updated `subscribers.status` without adding their addresses to the project suppression list or firing `subscriber.unsubscribed` — so a direct `/send` or `/send/batch` to a bulk-unsubscribed address still went out. Bulk imports now dispatch `subscriber.created` for each imported row, and bulk unsubscribes record the suppression entry and dispatch `subscriber.unsubscribed` for every updated subscriber.
+
+- **`subscriber.newsletter_unsubscribed` can now be selected in the dashboard webhook picker.** The backend allowed and dispatched the event, and the event-filter dropdown listed it, but the creation and edit modal omitted it from the checkbox list so subscribing to it from the UI required leaving every event unchecked.
+
 ## [0.8.3] — 2026-09-27
 
 ### Removed

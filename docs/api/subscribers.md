@@ -132,7 +132,7 @@ Syntax validation is always on — addresses without a valid `local@domain.tld` 
 | `suppressed` | Rows whose email is on the project's [suppression list](./suppressions); skipped without insert. |
 | `rejected` | Per-row breakdown of every row that didn't make it: `{email, name, reason}`. `reason` is one of `syntax_invalid`, `no_mx`, `disposable`, `suppressed`, `duplicate`. |
 
-The five reject categories sum with `imported` to the input count, so the result is exhaustive — every row your client sent is accounted for.
+The five reject categories sum with `imported` to the input count, so the result is exhaustive — every row your client sent is accounted for. Each imported row dispatches a `subscriber.created` webhook event.
 
 ## Bulk Action
 
@@ -156,7 +156,7 @@ Apply the same operation to many existing subscribers — the dashboard uses thi
 |---|---|---|---|
 | `action` | string | yes | One of `delete`, `update_status`, `add_tags`, `remove_tags`, `add_newsletter`, `remove_newsletter`. |
 | `subscriber_ids` | string[] | yes | Non-empty list of subscriber UUIDs. |
-| `status` | string | required for `update_status` | One of `active`, `pending`, `unsubscribed`. |
+| `status` | string | required for `update_status` | One of `active`, `pending`, `unsubscribed`. When set to `unsubscribed`, each updated subscriber is added to the project [suppression list](./suppressions) (`reason = unsubscribe`) and dispatches `subscriber.unsubscribed`. |
 | `tags` | string[] | required for `add_tags` / `remove_tags` | Non-empty list of tags to add to or remove from every selected subscriber. |
 | `newsletter_id` | string | required for `add_newsletter` / `remove_newsletter` | The [newsletter](/api/newsletters) to add every selected subscriber to (clearing any opt-out) or remove them from. |
 
@@ -174,7 +174,7 @@ PATCH /api/v1/projects/{id}/subscribers/{subscriberId}
 {"status": "unsubscribed"}
 ```
 
-Valid values: `active`, `pending`, `unsubscribed`. When set to `unsubscribed`, the `unsubscribed_at` timestamp is recorded.
+Valid values: `active`, `pending`, `unsubscribed`. When set to `unsubscribed`, the `unsubscribed_at` timestamp is recorded, the address is added to the project [suppression list](./suppressions) (`reason = unsubscribe`), and `subscriber.unsubscribed` is dispatched.
 
 The same endpoint also updates [custom field](#custom-fields) values — pass `fields` instead of (or alongside) `status`:
 

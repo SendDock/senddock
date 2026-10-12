@@ -64,13 +64,14 @@ func (q *Queries) BulkRemoveSubscriberTags(ctx context.Context, arg BulkRemoveSu
 	return err
 }
 
-const bulkUpdateSubscriberStatus = `-- name: BulkUpdateSubscriberStatus :exec
-UPDATE subscribers 
-SET 
+const bulkUpdateSubscriberStatus = `-- name: BulkUpdateSubscriberStatus :many
+UPDATE subscribers
+SET
     status = $3,
-    unsubscribed_at = CASE WHEN $3 = 'unsubscribed' THEN NOW() ELSE unsubscribed_at END,
+    unsubscribed_at = CASE WHEN $3::varchar = 'unsubscribed' THEN NOW() ELSE unsubscribed_at END,
     updated_at = NOW()
 WHERE project_id = $1 AND id = ANY($2::uuid[])
+RETURNING id, project_id, email, name, status, metadata, subscribed_at, unsubscribed_at, created_at, updated_at, tags
 `
 
 type BulkUpdateSubscriberStatusParams struct {
@@ -79,9 +80,39 @@ type BulkUpdateSubscriberStatusParams struct {
 	Status    string
 }
 
-func (q *Queries) BulkUpdateSubscriberStatus(ctx context.Context, arg BulkUpdateSubscriberStatusParams) error {
-	_, err := q.db.ExecContext(ctx, bulkUpdateSubscriberStatus, arg.ProjectID, pq.Array(arg.Column2), arg.Status)
-	return err
+func (q *Queries) BulkUpdateSubscriberStatus(ctx context.Context, arg BulkUpdateSubscriberStatusParams) ([]Subscriber, error) {
+	rows, err := q.db.QueryContext(ctx, bulkUpdateSubscriberStatus, arg.ProjectID, pq.Array(arg.Column2), arg.Status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Subscriber
+	for rows.Next() {
+		var i Subscriber
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.Email,
+			&i.Name,
+			&i.Status,
+			&i.Metadata,
+			&i.SubscribedAt,
+			&i.UnsubscribedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			pq.Array(&i.Tags),
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const countActiveSubscribersByProject = `-- name: CountActiveSubscribersByProject :one
