@@ -72,6 +72,7 @@ onMounted(() => {
         width: 'auto',
         fromElement: false,
         storageManager: false,
+        avoidInlineStyle: false,
         plugins: [newsletterPreset],
         pluginsOpts: {
             [newsletterPreset as any]: {
