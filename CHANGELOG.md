@@ -31,6 +31,8 @@ Releases are also published on [GitHub](https://github.com/arkhe-systems/senddoc
 
 - **`subscriber.newsletter_unsubscribed` can now be selected in the dashboard webhook picker.** The backend allowed and dispatched the event, and the event-filter dropdown listed it, but the creation and edit modal omitted it from the checkbox list so subscribing to it from the UI required leaving every event unchecked.
 
+- **Styles applied from the visual editor panel now stay on the element when it is moved.** GrapesJS defaulted `avoidInlineStyle` to `true`, which stored panel edits as selector rules that could stop matching after dragging an element to a new parent. Panel edits are written as inline styles now.
+
 ## [0.8.3] — 2026-09-27
 
 ### Removed

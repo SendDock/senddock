@@ -65,6 +65,8 @@ When using the visual editor, select any element to edit:
 - Size (width, height, max-width)
 - Border (radius, width, style, color)
 
+Styles applied from the Style Manager are written inline on the selected element, so they stay with the element if you drag it into a different container.
+
 ## Template Variables
 
 Use double curly braces to insert dynamic content:
