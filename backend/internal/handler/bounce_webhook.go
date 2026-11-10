@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/metrics"
-	"github.com/arkhe-systems/senddock/internal/service"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/metrics"
+	"github.com/senddock/senddock/internal/service"
 	"github.com/google/uuid"
 )
 

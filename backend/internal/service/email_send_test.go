@@ -18,7 +18,7 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
 
 // This drives a real message through the whole send path — template rendering, the

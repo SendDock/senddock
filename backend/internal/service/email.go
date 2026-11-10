@@ -22,11 +22,11 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/arkhe-systems/senddock/internal/cache"
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/metrics"
-	"github.com/arkhe-systems/senddock/internal/richtext"
-	"github.com/arkhe-systems/senddock/internal/webhooks"
+	"github.com/senddock/senddock/internal/cache"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/metrics"
+	"github.com/senddock/senddock/internal/richtext"
+	"github.com/senddock/senddock/internal/webhooks"
 	"github.com/google/uuid"
 	premailer "github.com/vanng822/go-premailer/premailer"
 )

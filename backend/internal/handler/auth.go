@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/service"
+	"github.com/senddock/senddock/internal/service"
 )
 
 type DeviceGate interface {

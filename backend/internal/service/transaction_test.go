@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
 
 // These tests exercise the flows that write more than one row to mean one thing, against a

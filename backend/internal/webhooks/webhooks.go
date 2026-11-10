@@ -16,8 +16,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/metrics"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/metrics"
 	"github.com/google/uuid"
 )
 

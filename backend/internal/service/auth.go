@@ -11,7 +11,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"

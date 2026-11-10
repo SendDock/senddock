@@ -12,9 +12,9 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/service"
-	"github.com/arkhe-systems/senddock/pkg/auth"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/service"
+	"github.com/senddock/senddock/pkg/auth"
 )
 
 // Workspace actions — creating a workspace, renaming it, adding or removing a member — have

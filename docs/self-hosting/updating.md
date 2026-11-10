@@ -19,7 +19,7 @@ In every case **your data is preserved**. Postgres lives in a named Docker volum
 
 ## Updating a prebuilt image install
 
-Use this when you installed via the canonical `ghcr.io/arkhe-systems/senddock` image — either through `install.sh` (Option 1) or Manual Docker Compose (Option 2) in [Installation](./installation). If `install.sh` set up Watchtower for you, **click "Update now"** in the dashboard nav instead of running the command below; the result is identical.
+Use this when you installed via the canonical `ghcr.io/senddock/senddock` image — either through `install.sh` (Option 1) or Manual Docker Compose (Option 2) in [Installation](./installation). If `install.sh` set up Watchtower for you, **click "Update now"** in the dashboard nav instead of running the command below; the result is identical.
 
 ```bash
 cd senddock
@@ -30,7 +30,7 @@ docker compose logs -f senddock
 
 What happens:
 
-1. `docker compose pull` fetches the latest `ghcr.io/arkhe-systems/senddock` image from GitHub Container Registry. Postgres and Redis images update too unless you've pinned them.
+1. `docker compose pull` fetches the latest `ghcr.io/senddock/senddock` image from GitHub Container Registry. Postgres and Redis images update too unless you've pinned them.
 2. `docker compose up -d` recreates the `senddock` container with the new image. Postgres and Redis containers stay running unless their image changed.
 3. The new container's entrypoint runs `goose -dir /app/migrations postgres "$DATABASE_URL" up`, which applies any new migrations. Existing rows in `goose_db_version` are skipped.
 4. The healthcheck in `docker-compose.yml` flips to "healthy" once `/health` returns 200 — usually within 10 seconds.
@@ -46,7 +46,7 @@ Pin the version in `docker-compose.yml` to control update timing:
 ```yaml
 services:
   senddock:
-    image: ghcr.io/arkhe-systems/senddock:0.8.2
+    image: ghcr.io/senddock/senddock:0.8.2
 ```
 
 When you decide to upgrade, edit the tag, then `docker compose pull && docker compose up -d`.
@@ -141,7 +141,7 @@ What each piece does:
 When you click "Update now":
 
 1. SendDock POSTs to `http://watchtower:8080/v1/update` with the bearer token.
-2. Watchtower pulls the latest `ghcr.io/arkhe-systems/senddock` image and recreates the container.
+2. Watchtower pulls the latest `ghcr.io/senddock/senddock` image and recreates the container.
 3. The dashboard polls `/api/v1/version` every 2 seconds; it tolerates the brief network errors while the container restarts, then sees the new version and shows a success toast.
 
 **Security notes:**
@@ -164,7 +164,7 @@ The dashboard's "Update available" badge and the Watchtower one-click button are
   "latest": "0.8.2",
   "update_available": false,
   "release_notes": "...",
-  "release_url": "https://github.com/arkhe-systems/senddock/releases/tag/v0.8.2"
+  "release_url": "https://github.com/SendDock/senddock/releases/tag/v0.8.2"
 }
 ```
 
@@ -197,7 +197,7 @@ Returns `400` if Watchtower isn't configured (`SENDDOCK_WATCHTOWER_URL`/`TOKEN` 
 For CI/CD pipelines, restricted environments, or step-by-step debugging:
 
 ```bash
-docker pull ghcr.io/arkhe-systems/senddock:latest
+docker pull ghcr.io/senddock/senddock:latest
 docker stop senddock-old
 docker rm senddock-old
 docker run -d \
@@ -205,7 +205,7 @@ docker run -d \
     --env-file /etc/senddock/.env \
     --network senddock-net \
     -p 8080:8080 \
-    ghcr.io/arkhe-systems/senddock:latest
+    ghcr.io/senddock/senddock:latest
 ```
 
 Whatever orchestrator you use (Kubernetes, Nomad, plain systemd-with-podman), the steps boil down to:
@@ -301,4 +301,4 @@ After reset, the next start behaves like a fresh install: setup screen appears, 
 
 ## Checking the current version
 
-The latest release and changelog live on [GitHub releases](https://github.com/arkhe-systems/senddock/releases). The image tag matching that release is published to [GHCR](https://github.com/Arkhe-Systems/senddock/pkgs/container/senddock) within a few minutes of the GitHub release going live.
+The latest release and changelog live on [GitHub releases](https://github.com/SendDock/senddock/releases). The image tag matching that release is published to [GHCR](https://github.com/SendDock/senddock/pkgs/container/senddock) within a few minutes of the GitHub release going live.

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arkhe-systems/senddock/internal/service"
+	"github.com/senddock/senddock/internal/service"
 )
 
 func TestRenderBrandedPageSanitizesBeforeSubstituting(t *testing.T) {

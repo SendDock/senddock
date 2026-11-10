@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arkhe-systems/senddock/pkg/auth"
+	"github.com/senddock/senddock/pkg/auth"
 	"github.com/google/uuid"
 )
 

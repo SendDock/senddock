@@ -13,9 +13,9 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/service"
-	"github.com/arkhe-systems/senddock/pkg/auth"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/service"
+	"github.com/senddock/senddock/pkg/auth"
 )
 
 // The signing secret is handed out once, by the response that creates the webhook,

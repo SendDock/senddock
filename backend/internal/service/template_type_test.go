@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 	"github.com/google/uuid"
 )
 
