@@ -11,16 +11,8 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
-
-// These tests exercise the flows that write more than one row to mean one thing, against a
-// real database. They skip unless DATABASE_URL points at a migrated instance.
-//
-// The failure they look for is the one nobody sees: a first row committed and a second one
-// lost. The only way to reproduce it deterministically is to make the second write fail on
-// purpose, which a trigger does — a unique key cannot be made to collide on demand without
-// taking the decision away from the code under test.
 
 type allowAllGate struct{}
 
@@ -47,8 +39,6 @@ func transactionTestDB(t *testing.T) (*sql.DB, *db.Queries) {
 	return conn, db.New(conn)
 }
 
-// failInsertsInto makes every insert into table fail, so the second write of a flow can be
-// told to fail while the first one is already done.
 func failInsertsInto(t *testing.T, conn *sql.DB, table string) {
 	t.Helper()
 
@@ -57,7 +47,6 @@ func failInsertsInto(t *testing.T, conn *sql.DB, table string) {
 		_, _ = conn.ExecContext(context.Background(), `DROP TRIGGER IF EXISTS `+trigger+` ON `+table)
 		_, _ = conn.ExecContext(context.Background(), `DROP FUNCTION IF EXISTS `+trigger+`()`)
 	}
-	// A previous run may have died before its own cleanup ran.
 	drop()
 
 	if _, err := conn.ExecContext(context.Background(),
@@ -74,8 +63,6 @@ func failInsertsInto(t *testing.T, conn *sql.DB, table string) {
 	t.Cleanup(drop)
 }
 
-// workspaceFixture creates an owner and a workspace they own, which is what the flows that
-// manage members require before they will write anything.
 func workspaceFixture(t *testing.T, conn *sql.DB) (workspaceID, ownerID uuid.UUID, ownerEmail string) {
 	t.Helper()
 
@@ -112,8 +99,6 @@ func workspaceFixture(t *testing.T, conn *sql.DB) (workspaceID, ownerID uuid.UUI
 	return workspaceID, ownerID, ownerEmail
 }
 
-// deleteUserByEmail removes a row the test may have left behind, so a failing run does not
-// poison the next one.
 func deleteUserByEmail(t *testing.T, conn *sql.DB, email string) {
 	t.Helper()
 	t.Cleanup(func() {
@@ -154,8 +139,6 @@ func TestRegisterCreatesAccountWorkspaceAndMembership(t *testing.T) {
 	}
 }
 
-// The account is written first and the workspace second, so a failure on the workspace used
-// to leave an account behind holding an email that can never be registered again.
 func TestRegisterLeavesNoAccountWhenTheWorkspaceWriteFails(t *testing.T) {
 	conn, queries := transactionTestDB(t)
 	auth := NewAuthService(queries, conn, "test-secret-that-is-long-enough-for-tests")
@@ -174,8 +157,6 @@ func TestRegisterLeavesNoAccountWhenTheWorkspaceWriteFails(t *testing.T) {
 	}
 }
 
-// The acceptance criterion of the audit item: a failing membership insert must not leave the
-// account it was created for.
 func TestCreateUserAndAddMemberLeavesNoOrphanWhenTheMembershipWriteFails(t *testing.T) {
 	conn, queries := transactionTestDB(t)
 	workspaces := NewWorkspaceService(queries, conn)
@@ -227,8 +208,6 @@ func TestCreateUserAndAddMemberWritesBothRows(t *testing.T) {
 	}
 }
 
-// A workspace whose owner row never landed belongs to nobody: it is not in any list and no
-// screen can delete it.
 func TestCreateWorkspaceLeavesNothingBehindWhenTheMembershipWriteFails(t *testing.T) {
 	conn, queries := transactionTestDB(t)
 	workspaces := NewWorkspaceService(queries, conn)
@@ -252,8 +231,6 @@ func TestCreateWorkspaceLeavesNothingBehindWhenTheMembershipWriteFails(t *testin
 	}
 }
 
-// A trigger that raises is an error like any other, so the flow must not turn it into a
-// silent success either.
 func TestAFailedFlowReportsAnError(t *testing.T) {
 	conn, queries := transactionTestDB(t)
 	workspaces := NewWorkspaceService(queries, conn)

@@ -167,13 +167,13 @@ The library is grouped into five categories:
 
 ### Where templates live
 
-The library is served from a separate public repo: [`Arkhe-Systems/senddock-templates`](https://github.com/Arkhe-Systems/senddock-templates). Every SendDock instance (Cloud and self-hosted) fetches the manifest from `raw.githubusercontent.com` and caches it in Redis for one hour. New templates added to the repo are live in every instance within an hour — no redeploy, no version bump.
+The library is served from a separate public repo: [`SendDock/senddock-templates`](https://github.com/SendDock/senddock-templates). Every SendDock instance (Cloud and self-hosted) fetches the manifest from `raw.githubusercontent.com` and caches it in Redis for one hour. New templates added to the repo are live in every instance within an hour — no redeploy, no version bump.
 
 Self-hosters who want to point at a private fork or a curated internal library can override the source with the [`TEMPLATE_LIBRARY_URL`](/guide/environment#optional) environment variable. The schema is documented in the public repo's `CONTRIBUTING.md`.
 
 ### Contributing a template
 
-Templates are content, not code, and the repo is MIT-licensed and open to community PRs — **one template per PR**. The full guide lives in [CONTRIBUTING.md](https://github.com/Arkhe-Systems/senddock-templates/blob/main/CONTRIBUTING.md); the short version:
+Templates are content, not code, and the repo is MIT-licensed and open to community PRs — **one template per PR**. The full guide lives in [CONTRIBUTING.md](https://github.com/SendDock/senddock-templates/blob/main/CONTRIBUTING.md); the short version:
 
 1. Pick a kebab-case `id` (e.g. `welcome-friendly`, `newsletter-startup-weekly`).
 2. Add `templates/<id>.html` — inline CSS, responsive, no `<script>` tags, no external assets.
@@ -184,7 +184,7 @@ Templates are content, not code, and the repo is MIT-licensed and open to commun
 
 CI validates schema, file presence, size limits, URL conventions, and rejects anything with a `<script>` tag. A maintainer reviews the visual and the copy quality before merging.
 
-This is the only SendDock repo that accepts external code contributions — the [core engine](https://github.com/Arkhe-Systems/senddock) is core-team-only by design — but templates are content, so the door is open.
+This is the only SendDock repo that accepts external code contributions — the [core engine](https://github.com/SendDock/senddock) is core-team-only by design — but templates are content, so the door is open.
 
 ## API
 

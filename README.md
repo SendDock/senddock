@@ -7,11 +7,11 @@
 Self-hosted email marketing where each project is its own sending identity — its own SMTP, domain, subscribers and analytics. Run every client, brand or app from one box you fully own. Bring your own SMTP, flat price, no per-contact fees. Self-host in 60 seconds with Docker, or use the [managed cloud](https://senddock.dev). Open source under AGPL-3.0 — core-team development.
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/arkhe-systems/senddock?color=brightgreen)](https://github.com/arkhe-systems/senddock/releases)
+[![Release](https://img.shields.io/github/v/release/SendDock/senddock?color=brightgreen)](https://github.com/SendDock/senddock/releases)
 [![Go](https://img.shields.io/badge/Go-1.25-00ADD8.svg?logo=go&logoColor=white)](https://go.dev)
 [![Vue](https://img.shields.io/badge/Vue-3-4FC08D.svg?logo=vue.js&logoColor=white)](https://vuejs.org)
-[![Docker](https://img.shields.io/badge/docker-multi--arch-2496ED.svg?logo=docker&logoColor=white)](https://github.com/arkhe-systems/senddock/pkgs/container/senddock)
-[![Stars](https://img.shields.io/github/stars/arkhe-systems/senddock?style=social)](https://github.com/arkhe-systems/senddock/stargazers)
+[![Docker](https://img.shields.io/badge/docker-multi--arch-2496ED.svg?logo=docker&logoColor=white)](https://github.com/SendDock/senddock/pkgs/container/senddock)
+[![Stars](https://img.shields.io/github/stars/SendDock/senddock?style=social)](https://github.com/SendDock/senddock/stargazers)
 
 [Website](https://senddock.dev) · [Documentation](https://docs.senddock.dev) · [Cloud](https://senddock.dev) · [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md)
 
@@ -55,14 +55,14 @@ curl -fsSL https://senddock.dev/install.sh | sudo bash
 
 The installer takes care of Docker, secrets, the compose file, and starts the stack. When it finishes, open the URL it prints and create your admin account.
 
-> On Debian, Fedora, RHEL, openSUSE, macOS, or any other OS: use the manual Docker Compose path below — it works anywhere Docker runs. Broader installer support is [on the roadmap](https://github.com/Arkhe-Systems/senddock/issues/79).
+> On Debian, Fedora, RHEL, openSUSE, macOS, or any other OS: use the manual Docker Compose path below — it works anywhere Docker runs. Broader installer support is [on the roadmap](https://github.com/SendDock/senddock/issues/79).
 
 <details>
 <summary>Manual install with Docker Compose (any Linux with Docker)</summary>
 
 ```bash
 mkdir senddock && cd senddock
-curl -fsSL https://raw.githubusercontent.com/arkhe-systems/senddock/main/docker-compose.image.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/SendDock/senddock/main/docker-compose.image.yml -o docker-compose.yml
 
 cat > .env <<EOF
 POSTGRES_PASSWORD=$(openssl rand -base64 32)
@@ -193,7 +193,7 @@ A license key (Lemon Squeezy) is available at [senddock.dev/pricing](https://sen
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for milestones and [GitHub Issues](https://github.com/arkhe-systems/senddock/issues) for what's actively being worked on. Comments, +1s, and well-described feature requests on existing issues help us prioritize.
+See [ROADMAP.md](ROADMAP.md) for milestones and [GitHub Issues](https://github.com/SendDock/senddock/issues) for what's actively being worked on. Comments, +1s, and well-described feature requests on existing issues help us prioritize.
 
 ---
 
@@ -229,7 +229,7 @@ Prerequisites: Go 1.25+, Node 20+, Docker, [goose](https://github.com/pressly/go
 
 **Pull requests with code: not accepted on the official repository.** The reason is straightforward — SendDock has a paid Pro tier, and we are not comfortable monetizing volunteer code. The AGPL gives you full freedom to fork, modify, and run your own version with whatever changes you need.
 
-Questions, ideas, or want to show what you've built with SendDock? Open a [GitHub Discussion](https://github.com/arkhe-systems/senddock/discussions) or email **hello@senddock.dev**.
+Questions, ideas, or want to show what you've built with SendDock? Open a [GitHub Discussion](https://github.com/SendDock/senddock/discussions) or email **hello@senddock.dev**.
 
 ---
 
@@ -245,6 +245,6 @@ For a commercial license that exempts you from the AGPL copyleft clause, contact
 
 <div align="center">
 
-Part of [Arkhe Systems](https://arkhe.systems)
+Created and maintained by [JuansesDev](https://juanses.dev) ([@JuansesDev](https://github.com/JuansesDev))
 
 </div>

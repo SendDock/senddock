@@ -6,7 +6,7 @@
 # (senddock + postgres + redis).
 #
 # Install:
-#   curl -fsSL https://raw.githubusercontent.com/Arkhe-Systems/senddock/main/scripts/setup.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/SendDock/senddock/main/scripts/setup.sh | sudo bash
 #
 # The installer asks nothing. Your public URL, SMTP and license key are
 # configured from the dashboard the first time you open SendDock.
@@ -22,7 +22,7 @@ set -euo pipefail
 
 INSTALL_DIR="${INSTALL_DIR:-/opt/senddock}"
 SENDDOCK_PORT="${SENDDOCK_PORT:-8080}"
-COMPOSE_URL="https://raw.githubusercontent.com/Arkhe-Systems/senddock/main/docker-compose.image.yml"
+COMPOSE_URL="https://raw.githubusercontent.com/SendDock/senddock/main/docker-compose.image.yml"
 
 if [[ -t 1 ]]; then
   b=$(printf '\033[1m'); g=$(printf '\033[32m')

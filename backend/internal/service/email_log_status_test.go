@@ -6,12 +6,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
 
-// A log row is written before the send so the tracking pixel and the click links have an id
-// to point at. Recording it as sent at that moment counted attempts whose outcome was still
-// unknown, and a crash in between left them counted as delivered forever.
 func TestLogPendingDoesNotClaimTheSendSucceeded(t *testing.T) {
 	conn, queries := leaseTestDB(t)
 	ctx := context.Background()
@@ -35,7 +32,6 @@ func TestLogPendingDoesNotClaimTheSendSucceeded(t *testing.T) {
 		t.Fatalf("new log row status = %q, want %q", status, "pending")
 	}
 
-	// The stats endpoint counts 'sent', so an unfinished attempt must not appear there.
 	sent, err := queries.CountEmailLogsByStatus(ctx, db.CountEmailLogsByStatusParams{
 		ProjectID: projectID,
 		Status:    "sent",
@@ -48,7 +44,6 @@ func TestLogPendingDoesNotClaimTheSendSucceeded(t *testing.T) {
 	}
 }
 
-// Once the relay accepts the message the row has to say so.
 func TestMarkLogStatusSettlesTheOutcome(t *testing.T) {
 	conn, queries := leaseTestDB(t)
 	ctx := context.Background()

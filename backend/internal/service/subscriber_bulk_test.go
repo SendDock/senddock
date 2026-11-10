@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/webhooks"
+	"github.com/senddock/senddock/internal/webhooks"
 	"github.com/google/uuid"
 )
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/arkhe-systems/senddock/internal/service"
+	"github.com/senddock/senddock/internal/service"
 )
 
 type ReleaseHandler struct {

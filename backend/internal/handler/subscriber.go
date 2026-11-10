@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/response"
-	"github.com/arkhe-systems/senddock/internal/service"
-	"github.com/arkhe-systems/senddock/pkg/auth"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/response"
+	"github.com/senddock/senddock/internal/service"
+	"github.com/senddock/senddock/pkg/auth"
 )
 
 type SubscriberHandler struct {

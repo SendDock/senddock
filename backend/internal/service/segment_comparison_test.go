@@ -5,12 +5,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/arkhe-systems/senddock/pkg/segments"
+	"github.com/senddock/senddock/pkg/segments"
 )
 
-// The comparison a date rule compiles to has to run against a real database, because that
-// is where the old cast failed: the segment saved fine and then took the preview and the
-// broadcast down with an invalid-input-syntax error.
 func TestSegmentDateComparisonRunsAgainstPostgres(t *testing.T) {
 	conn, _ := leaseTestDB(t)
 	ctx := context.Background()
@@ -45,7 +42,6 @@ func TestSegmentDateComparisonRunsAgainstPostgres(t *testing.T) {
 	}
 }
 
-// The numeric path has to keep working alongside it.
 func TestSegmentNumberComparisonRunsAgainstPostgres(t *testing.T) {
 	conn, _ := leaseTestDB(t)
 	ctx := context.Background()

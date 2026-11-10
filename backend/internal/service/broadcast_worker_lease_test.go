@@ -10,13 +10,8 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
-
-// These tests exercise the broadcast job ownership lease against a real database.
-// They skip unless DATABASE_URL points at a migrated instance, so the default test run
-// stays free of external dependencies; CI passes the value explicitly when a database
-// is available.
 
 func leaseTestDB(t *testing.T) (*sql.DB, *db.Queries) {
 	t.Helper()
@@ -39,8 +34,6 @@ func leaseTestDB(t *testing.T) (*sql.DB, *db.Queries) {
 	return conn, db.New(conn)
 }
 
-// leaseFixtures creates the minimum graph a broadcast job needs and returns the ids.
-// Deleting the workspace in cleanup cascades to everything the test inserted.
 func leaseFixtures(t *testing.T, conn *sql.DB) (broadcastID, projectID, subscriberID uuid.UUID) {
 	t.Helper()
 	ctx := context.Background()
@@ -97,8 +90,6 @@ func leaseFixtures(t *testing.T, conn *sql.DB) (broadcastID, projectID, subscrib
 	return broadcastID, projectID, subscriberID
 }
 
-// insertSendingJob writes a job already in 'sending' with the given ownership, which is
-// what startup recovery inspects.
 func insertSendingJob(t *testing.T, conn *sql.DB, broadcastID, projectID, subscriberID uuid.UUID, recipient string, worker uuid.NullUUID, lease sql.NullTime) uuid.UUID {
 	t.Helper()
 
@@ -129,8 +120,6 @@ func jobOwnerAndLease(t *testing.T, conn *sql.DB, id uuid.UUID) (string, uuid.Nu
 	return status, worker, lease
 }
 
-// A restart must not reclaim a job whose lease is still valid: that job belongs to an
-// instance that is actively delivering it, and reclaiming it sends the email twice.
 func TestResetStuckSendingJobsLeavesLiveLeasesAlone(t *testing.T) {
 	conn, q := leaseTestDB(t)
 	broadcastID, projectID, subscriberID := leaseFixtures(t, conn)
@@ -142,7 +131,6 @@ func TestResetStuckSendingJobsLeavesLiveLeasesAlone(t *testing.T) {
 		uuid.NullUUID{UUID: liveWorker, Valid: true},
 		sql.NullTime{Time: time.Now().Add(time.Minute), Valid: true})
 
-	// Recover as if this were a fresh process starting up.
 	if _, err := q.ResetStuckSendingJobs(ctx, time.Now()); err != nil {
 		t.Fatalf("reset stuck jobs: %v", err)
 	}
@@ -159,8 +147,6 @@ func TestResetStuckSendingJobsLeavesLiveLeasesAlone(t *testing.T) {
 	}
 }
 
-// Abandoned work still has to be recovered: an expired lease and a row written before
-// leases existed both go back to the queue.
 func TestResetStuckSendingJobsReclaimsAbandonedWork(t *testing.T) {
 	conn, q := leaseTestDB(t)
 	broadcastID, projectID, subscriberID := leaseFixtures(t, conn)
@@ -194,8 +180,6 @@ func TestResetStuckSendingJobsReclaimsAbandonedWork(t *testing.T) {
 	}
 }
 
-// A claimed job carries its owner and deadline, which is what makes the recovery above
-// able to tell abandoned work from work in flight.
 func TestClaimBroadcastJobStampsOwnerAndLease(t *testing.T) {
 	conn, q := leaseTestDB(t)
 	broadcastID, projectID, subscriberID := leaseFixtures(t, conn)

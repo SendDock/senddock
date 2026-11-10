@@ -34,7 +34,7 @@ export default defineConfig({
       { text: 'Changelog', link: '/changelog' },
       {
         text: 'GitHub',
-        link: 'https://github.com/arkhe-systems/senddock',
+        link: 'https://github.com/SendDock/senddock',
       },
     ],
     sidebar: {
@@ -132,11 +132,11 @@ export default defineConfig({
       ],
     },
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/arkhe-systems/senddock' },
+      { icon: 'github', link: 'https://github.com/SendDock/senddock' },
     ],
     footer: {
       message: 'Released under the AGPL-3.0 License.',
-      copyright: 'Part of Arkhe Systems',
+      copyright: 'Built by JuansesDev',
     },
     search: {
       provider: 'local',

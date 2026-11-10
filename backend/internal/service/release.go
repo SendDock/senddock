@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/cache"
-	"github.com/arkhe-systems/senddock/internal/version"
+	"github.com/senddock/senddock/internal/cache"
+	"github.com/senddock/senddock/internal/version"
 )
 
 const (
-	githubReleaseURL = "https://api.github.com/repos/arkhe-systems/senddock/releases/latest"
+	githubReleaseURL = "https://api.github.com/repos/SendDock/senddock/releases/latest"
 	releaseCacheKey  = "release:latest"
 	releaseCacheTTL  = time.Hour
 )

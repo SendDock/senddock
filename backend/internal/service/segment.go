@@ -7,8 +7,8 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/pkg/segments"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/pkg/segments"
 	"github.com/google/uuid"
 )
 

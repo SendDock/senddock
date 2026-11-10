@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/cache"
+	"github.com/senddock/senddock/internal/cache"
 )
 
 const (

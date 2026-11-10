@@ -16,7 +16,7 @@ RUN go mod download
 COPY backend/ .
 COPY --from=frontend /app/frontend/dist ../frontend/dist
 RUN CGO_ENABLED=0 go build \
-    -ldflags="-X github.com/arkhe-systems/senddock/internal/version.Version=${VERSION}" \
+    -ldflags="-X github.com/senddock/senddock/internal/version.Version=${VERSION}" \
     -o /senddock cmd/server/main.go
 RUN go install github.com/pressly/goose/v3/cmd/goose@v3.24.1
 

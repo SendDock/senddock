@@ -41,7 +41,7 @@ func Load() Config {
 		RateLimitPerMinute: getEnvInt64("RATE_LIMIT_PER_MINUTE", 600),
 		WatchtowerURL:      strings.TrimSpace(getEnv("SENDDOCK_WATCHTOWER_URL", "")),
 		WatchtowerToken:    strings.TrimSpace(getEnv("SENDDOCK_WATCHTOWER_TOKEN", "")),
-		TemplateLibraryURL: strings.TrimSpace(getEnv("TEMPLATE_LIBRARY_URL", "https://raw.githubusercontent.com/Arkhe-Systems/senddock-templates/main/index.json")),
+		TemplateLibraryURL: strings.TrimSpace(getEnv("TEMPLATE_LIBRARY_URL", "https://raw.githubusercontent.com/SendDock/senddock-templates/main/index.json")),
 	}
 }
 

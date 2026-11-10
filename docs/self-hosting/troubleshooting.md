@@ -273,7 +273,7 @@ If `REDIS_URL` is set but Redis is unreachable, SendDock falls back to direct da
 
 ## Asking for help
 
-If your issue isn't here, open an issue on [GitHub](https://github.com/arkhe-systems/senddock/issues) with:
+If your issue isn't here, open an issue on [GitHub](https://github.com/SendDock/senddock/issues) with:
 
 - SendDock version (`docker logs senddock | grep version` or check the bottom of the dashboard)
 - Deployment mode (`self-hosted` / `cloud`)

@@ -13,18 +13,10 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/service"
-	"github.com/arkhe-systems/senddock/pkg/auth"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/service"
+	"github.com/senddock/senddock/pkg/auth"
 )
-
-// The signing secret is handed out once, by the response that creates the webhook,
-// and no read path may return it again. These tests drive the real handler over HTTP
-// against a migrated database, because the leak this guards against lived in the
-// response mapping shared by every read, not in a function that can be called alone.
-//
-// They skip unless DATABASE_URL points at a migrated instance, so the default test run
-// stays free of external dependencies.
 
 type webhookSecretFixture struct {
 	mux       http.Handler
@@ -103,8 +95,6 @@ func newWebhookSecretFixture(t *testing.T, role string) webhookSecretFixture {
 	}
 }
 
-// insertWebhook writes a webhook with a known secret, for tests that only exercise a
-// read path and so do not need a role allowed to create one.
 func (f webhookSecretFixture) insertWebhook(t *testing.T, secret string) string {
 	t.Helper()
 
@@ -162,8 +152,6 @@ func TestWebhookSecretIsReturnedOnceAndNeverReadBack(t *testing.T) {
 		t.Fatal("created webhook has no id")
 	}
 
-	// Every read below must be silent about a secret that is known to exist, so the
-	// assertions cannot pass merely because nothing was generated.
 	reads := []struct {
 		name   string
 		method string
@@ -210,10 +198,6 @@ func TestWebhookSecretIsReturnedOnceAndNeverReadBack(t *testing.T) {
 	}
 }
 
-// A read-only member can list a project's webhooks, and that role has no business
-// holding the signing key: with the secret readable it could sign deliveries of its
-// own. Reading a webhook needs no capability, so this is the widest audience the
-// field was exposed to.
 func TestWebhookSecretIsHiddenFromAViewer(t *testing.T) {
 	f := newWebhookSecretFixture(t, "viewer")
 

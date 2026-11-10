@@ -1,4 +1,4 @@
-module github.com/arkhe-systems/senddock
+module github.com/senddock/senddock
 
 go 1.25.7
 

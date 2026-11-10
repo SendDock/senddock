@@ -5,7 +5,7 @@ All notable changes to SendDock are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Releases are also published on [GitHub](https://github.com/arkhe-systems/senddock/releases) and the `ghcr.io/arkhe-systems/senddock` image carries the matching tag.
+Releases are also published on [GitHub](https://github.com/SendDock/senddock/releases) and the `ghcr.io/senddock/senddock` image carries the matching tag.
 
 ## [Unreleased]
 
@@ -139,8 +139,8 @@ The "Marketing-ready" milestone — SendDock stops being send-to-everyone and be
 
 ### Added
 
-- **Custom fields for subscribers ([#72](https://github.com/arkhe-systems/senddock/issues/72), Core).** Typed, project-scoped attributes on top of the existing `subscribers.metadata` column: `string`, `number`, `date`, `boolean`, `enum`. Define them under **Settings → Custom Fields**; values are validated on write (unknown keys rejected), render in templates as `{{custom.KEY}}`, show as columns and per-type inputs in the subscribers table, and map from extra CSV columns on import. New endpoints under `/api/v1/projects/{id}/fields`.
-- **Tags + segments ([#40](https://github.com/arkhe-systems/senddock/issues/40), Core).** Subscribers carry free-form tags (single, bulk, and inline-on-import). Segments are saved filters — a match-all/any predicate over `status`, `tags` and `custom.*` fields — with a live match count while you build. Broadcasts accept a `segment_id` to send to a subset instead of all active subscribers. New endpoints under `/api/v1/projects/{id}/segments` and `/tags`.
+- **Custom fields for subscribers ([#72](https://github.com/SendDock/senddock/issues/72), Core).** Typed, project-scoped attributes on top of the existing `subscribers.metadata` column: `string`, `number`, `date`, `boolean`, `enum`. Define them under **Settings → Custom Fields**; values are validated on write (unknown keys rejected), render in templates as `{{custom.KEY}}`, show as columns and per-type inputs in the subscribers table, and map from extra CSV columns on import. New endpoints under `/api/v1/projects/{id}/fields`.
+- **Tags + segments ([#40](https://github.com/SendDock/senddock/issues/40), Core).** Subscribers carry free-form tags (single, bulk, and inline-on-import). Segments are saved filters — a match-all/any predicate over `status`, `tags` and `custom.*` fields — with a live match count while you build. Broadcasts accept a `segment_id` to send to a subset instead of all active subscribers. New endpoints under `/api/v1/projects/{id}/segments` and `/tags`.
 - **Segment filter on Pro Analytics.** The analytics overview accepts an optional `segment_id` to scope every metric to a segment's members.
 
 ### Changed
@@ -157,8 +157,8 @@ Two new features and a chunky bag of UI fixes. Headline is the **community start
 
 ### Added
 
-- **Community template library** ([#73](https://github.com/Arkhe-Systems/senddock/issues/73)). New "★ Browse library" button on the Templates page opens a modal with a categorized grid of starter templates (welcome flows, monthly digests, single-story newsletters, product launches, changelogs, weekly link roundups, password resets, email verifications, transactional receipts). Click a template, get a clone in your project, ready to edit. Library content lives in the public [`Arkhe-Systems/senddock-templates`](https://github.com/Arkhe-Systems/senddock-templates) repo — community PRs welcome, MIT-licensed. New backend service caches the manifest in Redis for 1 hour; per-template HTML is fetched on demand. Override the source with `TEMPLATE_LIBRARY_URL` to point at a private fork or curated internal gallery.
-- **Arch Linux family support in the one-line installer** ([#81](https://github.com/Arkhe-Systems/senddock/issues/81)). `scripts/setup.sh` now branches on `/etc/os-release` and runs the pacman-based Docker install path on Arch, Manjaro, EndeavourOS, CachyOS, Garuda, or anything with `ID_LIKE=arch`. Ubuntu path unchanged. The die message for unsupported distros now lists both supported families and links to the manual Compose path. Tracked under the broader multi-distro umbrella ([#79](https://github.com/Arkhe-Systems/senddock/issues/79)); Debian, Fedora, RHEL and openSUSE remain TODO. macOS support tracked separately under [#82](https://github.com/Arkhe-Systems/senddock/issues/82).
+- **Community template library** ([#73](https://github.com/SendDock/senddock/issues/73)). New "★ Browse library" button on the Templates page opens a modal with a categorized grid of starter templates (welcome flows, monthly digests, single-story newsletters, product launches, changelogs, weekly link roundups, password resets, email verifications, transactional receipts). Click a template, get a clone in your project, ready to edit. Library content lives in the public [`SendDock/senddock-templates`](https://github.com/SendDock/senddock-templates) repo — community PRs welcome, MIT-licensed. New backend service caches the manifest in Redis for 1 hour; per-template HTML is fetched on demand. Override the source with `TEMPLATE_LIBRARY_URL` to point at a private fork or curated internal gallery.
+- **Arch Linux family support in the one-line installer** ([#81](https://github.com/SendDock/senddock/issues/81)). `scripts/setup.sh` now branches on `/etc/os-release` and runs the pacman-based Docker install path on Arch, Manjaro, EndeavourOS, CachyOS, Garuda, or anything with `ID_LIKE=arch`. Ubuntu path unchanged. The die message for unsupported distros now lists both supported families and links to the manual Compose path. Tracked under the broader multi-distro umbrella ([#79](https://github.com/SendDock/senddock/issues/79)); Debian, Fedora, RHEL and openSUSE remain TODO. macOS support tracked separately under [#82](https://github.com/SendDock/senddock/issues/82).
 
 ### Changed
 
@@ -166,7 +166,7 @@ Two new features and a chunky bag of UI fixes. Headline is the **community start
 
 ### Fixed
 
-- **"Buttons stop responding after login" — password-manager autofill overlay crash** ([#80](https://github.com/Arkhe-Systems/senddock/issues/80)). Bitwarden / 1Password / LastPass inject overlay nodes adjacent to input fields. When a modal opened via `<Teleport to="body">` moved those inputs to a new DOM position, the extension's stored reference became orphaned and the next overlay update threw `insertBefore on Node` — corrupting the extension's internal DOM tracking and intercepting subsequent click events on the page until the next full reload. Fixed by dropping `<Teleport>` from `AppModal` (the modal still uses `fixed inset-0 z-50` so it overlays the viewport the same way) and adding defensive opt-out attributes on `AppInput` for all four major password managers. Credential fields on login/register opt back in via explicit `autocomplete` values so they still autofill normally.
+- **"Buttons stop responding after login" — password-manager autofill overlay crash** ([#80](https://github.com/SendDock/senddock/issues/80)). Bitwarden / 1Password / LastPass inject overlay nodes adjacent to input fields. When a modal opened via `<Teleport to="body">` moved those inputs to a new DOM position, the extension's stored reference became orphaned and the next overlay update threw `insertBefore on Node` — corrupting the extension's internal DOM tracking and intercepting subsequent click events on the page until the next full reload. Fixed by dropping `<Teleport>` from `AppModal` (the modal still uses `fixed inset-0 z-50` so it overlays the viewport the same way) and adding defensive opt-out attributes on `AppInput` for all four major password managers. Credential fields on login/register opt back in via explicit `autocomplete` values so they still autofill normally.
 - **"Send Email" button felt dead while it actually worked.** `openSendModal` was fetching templates async before opening the modal, with no visual feedback on the button. Now the button shows "Loading…" and is disabled during the fetch; an early-return guard prevents stacked clicks from queuing multiple in-flight requests.
 - **`fetch()` calls never timed out, leaving components stuck in loading state forever.** A hung backend (SMTP test against an unreachable host, slow tunnel, dead connection) would leave the calling component spinning indefinitely. Added a 30s default timeout via `AbortController` + signal in the API client, overridable per call via the `timeoutMs` option. This is the underlying cause of several "buttons stop working" reports.
 - **`AppModal` could leave `body.overflow: hidden` after unmount.** If a modal unmounted while still shown (e.g. mid-navigation), the body could be left scroll-locked until the next reload. `onUnmounted` now resets the style as a safety net.
@@ -402,7 +402,7 @@ The "team launch" release. Workspaces with members and roles, a new Team plan ab
 - **Pro Analytics dashboard.** Funnel (sent → delivered → opened → clicked), opens-over-time chart with adaptive bucket granularity, top templates, top clicked links, auto-generated insights, date presets and custom range, trend pills against the previous equivalent window.
 - **One-click unsubscribe (RFC 8058).** Confirmation page on `GET /unsubscribe/{id}/{subscriberId}` and instant `POST` handling so Gmail/Outlook native buttons work without a click-through. Per-recipient HMAC-signed URLs.
 - **Pro license validator.** `SENDDOCK_LICENSE_KEY` validated against Lemon Squeezy on startup and re-checked periodically.
-- **Container registry split.** `ghcr.io/arkhe-systems/senddock` exclusively carries tagged releases (`:0.5.0`, `:0.5`, `:0`, `:latest`) and stays public. Pre-release `:dev` builds moved to a separate private package.
+- **Container registry split.** `ghcr.io/senddock/senddock` exclusively carries tagged releases (`:0.5.0`, `:0.5`, `:0`, `:latest`) and stays public. Pre-release `:dev` builds moved to a separate private package.
 - **Per-project rate limits** on `/send`, `/send/batch` and `/broadcast` enforced via Redis.
 - **SMTP test endpoint** with bounded 5s connect / 10s session timeouts.
 - **`AppButton`** gains `size="sm"` and `variant="ghost"` for consistent modal action rows.
@@ -418,12 +418,12 @@ Earlier work and the foundation for the open-core release. See git history for t
 - Open-tracking pixel and unsubscribe links.
 - Initial dashboard, project switcher, settings UI.
 
-[Unreleased]: https://github.com/arkhe-systems/senddock/compare/v0.6.3...HEAD
-[0.6.3]: https://github.com/arkhe-systems/senddock/compare/v0.6.2...v0.6.3
-[0.6.2]: https://github.com/arkhe-systems/senddock/compare/v0.6.1...v0.6.2
-[0.6.1]: https://github.com/arkhe-systems/senddock/compare/v0.6.0...v0.6.1
-[0.6.0]: https://github.com/arkhe-systems/senddock/compare/v0.5.2...v0.6.0
-[0.5.2]: https://github.com/arkhe-systems/senddock/compare/v0.5.1...v0.5.2
-[0.5.1]: https://github.com/arkhe-systems/senddock/compare/v0.5.0...v0.5.1
-[0.5.0]: https://github.com/arkhe-systems/senddock/compare/v0.4.0...v0.5.0
-[0.4.0]: https://github.com/arkhe-systems/senddock/releases/tag/v0.4.0
+[Unreleased]: https://github.com/SendDock/senddock/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/SendDock/senddock/compare/v0.6.2...v0.6.3
+[0.6.2]: https://github.com/SendDock/senddock/compare/v0.6.1...v0.6.2
+[0.6.1]: https://github.com/SendDock/senddock/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/SendDock/senddock/compare/v0.5.2...v0.6.0
+[0.5.2]: https://github.com/SendDock/senddock/compare/v0.5.1...v0.5.2
+[0.5.1]: https://github.com/SendDock/senddock/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/SendDock/senddock/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/SendDock/senddock/releases/tag/v0.4.0

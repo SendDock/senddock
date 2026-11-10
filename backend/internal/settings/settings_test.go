@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
 
 type reversibleCipher struct{}
