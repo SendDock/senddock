@@ -55,5 +55,5 @@ SendDock lets developers send transactional emails and run broadcast campaigns f
 
 ## Optional
 
-- [Project on GitHub](https://github.com/arkhe-systems/senddock): Source, issues, releases.
-- [Container image](https://github.com/arkhe-systems/senddock/pkgs/container/senddock): `ghcr.io/arkhe-systems/senddock:latest` (also `:0.6`, `:0.6.0`).
+- [Project on GitHub](https://github.com/SendDock/senddock): Source, issues, releases.
+- [Container image](https://github.com/SendDock/senddock/pkgs/container/senddock): `ghcr.io/senddock/senddock:latest` (also `:0.6`, `:0.6.0`).

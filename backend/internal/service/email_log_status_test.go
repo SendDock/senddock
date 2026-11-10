@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
 
 // A log row is written before the send so the tracking pixel and the click links have an id

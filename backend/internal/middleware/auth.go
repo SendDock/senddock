@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/arkhe-systems/senddock/pkg/auth"
+	"github.com/senddock/senddock/pkg/auth"
 	"github.com/golang-jwt/jwt/v5"
 )
 

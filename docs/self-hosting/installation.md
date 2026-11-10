@@ -1,6 +1,6 @@
 # Installation
 
-SendDock ships as a single Docker image: `ghcr.io/arkhe-systems/senddock`. Four install paths are supported, in order of preference.
+SendDock ships as a single Docker image: `ghcr.io/senddock/senddock`. Four install paths are supported, in order of preference.
 
 ## What gets deployed
 
@@ -39,7 +39,7 @@ A single Docker container running the Go binary serves both the API and the Vue 
 That's it. Everything else is handled by Docker.
 
 ::: tip Multi-arch image
-The official `ghcr.io/arkhe-systems/senddock` image is built for both **`linux/amd64`** and **`linux/arm64`** in the same release tag. So x86 cloud servers (most VPS, AWS x86, DigitalOcean droplets), AWS Graviton / Hetzner ARM nodes, Raspberry Pi 4+ and Apple Silicon dev machines all pull the right binary automatically — no `--platform` flag, no separate tag.
+The official `ghcr.io/senddock/senddock` image is built for both **`linux/amd64`** and **`linux/arm64`** in the same release tag. So x86 cloud servers (most VPS, AWS x86, DigitalOcean droplets), AWS Graviton / Hetzner ARM nodes, Raspberry Pi 4+ and Apple Silicon dev machines all pull the right binary automatically — no `--platform` flag, no separate tag.
 :::
 
 ::: warning Don't expect to send real emails from a laptop
@@ -71,7 +71,7 @@ less setup.sh    # read it
 sudo bash setup.sh
 ```
 
-The installer is the canonical [`scripts/setup.sh`](https://github.com/Arkhe-Systems/senddock/blob/main/scripts/setup.sh) from the repo, also attached as an asset on every [GitHub release](https://github.com/Arkhe-Systems/senddock/releases).
+The installer is the canonical [`scripts/setup.sh`](https://github.com/SendDock/senddock/blob/main/scripts/setup.sh) from the repo, also attached as an asset on every [GitHub release](https://github.com/SendDock/senddock/releases).
 
 ---
 
@@ -81,7 +81,7 @@ The fastest path on non-Ubuntu hosts, or when you want to see exactly what's bei
 
 ```bash
 mkdir senddock && cd senddock
-curl -fsSL https://raw.githubusercontent.com/arkhe-systems/senddock/main/docker-compose.image.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/SendDock/senddock/main/docker-compose.image.yml -o docker-compose.yml
 ```
 
 Create `.env` next to it:
@@ -171,10 +171,10 @@ The image is the same in all cases; the license just toggles the gated routes. O
 ```yaml
 services:
   senddock:
-    image: ghcr.io/arkhe-systems/senddock:0.8.2
+    image: ghcr.io/senddock/senddock:0.8.2
 ```
 
-See available tags on [GHCR](https://github.com/Arkhe-Systems/senddock/pkgs/container/senddock). Only versioned tags (`X.Y.Z`, `X.Y`, `X`) and `:latest` are public — pre-release builds (`:dev`) live in a separate, private package and are not intended for end users.
+See available tags on [GHCR](https://github.com/SendDock/senddock/pkgs/container/senddock). Only versioned tags (`X.Y.Z`, `X.Y`, `X`) and `:latest` are public — pre-release builds (`:dev`) live in a separate, private package and are not intended for end users.
 
 ---
 
@@ -183,13 +183,13 @@ See available tags on [GHCR](https://github.com/Arkhe-Systems/senddock/pkgs/cont
 A SendDock template is [pending review in the Dokploy marketplace](https://github.com/Dokploy/templates/pull/821). Until it lands, deploy via Dokploy's **Docker Compose** type:
 
 1. **Dokploy → Project → Create Service → Docker Compose**
-2. Paste the contents of [`docker-compose.image.yml`](https://github.com/Arkhe-Systems/senddock/blob/main/docker-compose.image.yml). Optionally append the Watchtower override block from [Updating → One-click updates](./updating#one-click-updates-from-the-dashboard-watchtower) if you want the dashboard's "Update now" button to work directly from SendDock.
+2. Paste the contents of [`docker-compose.image.yml`](https://github.com/SendDock/senddock/blob/main/docker-compose.image.yml). Optionally append the Watchtower override block from [Updating → One-click updates](./updating#one-click-updates-from-the-dashboard-watchtower) if you want the dashboard's "Update now" button to work directly from SendDock.
 3. Fill the env vars in Dokploy's UI: `POSTGRES_PASSWORD`, `JWT_SECRET` (and `SENDDOCK_WATCHTOWER_TOKEN` if you added the override). The public URL is set from the dashboard after first boot.
 4. Map the service's port 8080 to your domain via Dokploy's Traefik integration.
 5. Deploy.
 
 ::: tip Updates without Watchtower
-Even without the Watchtower block, updating is one click: in Dokploy, hit **Redeploy** on the SendDock service. Dokploy pulls `ghcr.io/arkhe-systems/senddock:latest` and recreates the container. Postgres + Redis volumes are preserved. The dashboard's update modal will surface a "rebuild from your panel" prompt when a new version is available — the bare-Docker command shown there is a fallback, not the path you should use under Dokploy.
+Even without the Watchtower block, updating is one click: in Dokploy, hit **Redeploy** on the SendDock service. Dokploy pulls `ghcr.io/senddock/senddock:latest` and recreates the container. Postgres + Redis volumes are preserved. The dashboard's update modal will surface a "rebuild from your panel" prompt when a new version is available — the bare-Docker command shown there is a fallback, not the path you should use under Dokploy.
 :::
 
 ---
@@ -199,7 +199,7 @@ Even without the Watchtower block, updating is one click: in Dokploy, hit **Rede
 For self-hosters who want to compile Core from source — useful for audits, custom patches, or running an unreleased branch.
 
 ```bash
-git clone https://github.com/arkhe-systems/senddock.git
+git clone https://github.com/SendDock/senddock.git
 cd senddock
 cp .env.production.example .env
 # edit .env and set the two required values:

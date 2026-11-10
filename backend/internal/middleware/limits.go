@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/cache"
+	"github.com/senddock/senddock/internal/cache"
 )
 
 const maxBodySize = 10 * 1024 * 1024

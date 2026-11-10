@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/arkhe-systems/senddock/pkg/segments"
+	"github.com/senddock/senddock/pkg/segments"
 )
 
 // The comparison a date rule compiles to has to run against a real database, because that

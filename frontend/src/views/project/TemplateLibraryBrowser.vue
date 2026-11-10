@@ -117,7 +117,7 @@ watch(() => props.show, (v) => {
             <p class="text-zinc-400 text-sm mb-5">
                 Templates live in a separate community repo. Be the first to contribute a starter — every SendDock instance picks it up within an hour.
             </p>
-            <a href="https://github.com/Arkhe-Systems/senddock-templates" target="_blank" rel="noopener"
+            <a href="https://github.com/SendDock/senddock-templates" target="_blank" rel="noopener"
                 class="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-zinc-850 hover:bg-zinc-700 text-white rounded-lg transition">
                 Open the templates repo
                 <span aria-hidden="true">↗</span>

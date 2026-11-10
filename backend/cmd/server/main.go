@@ -9,8 +9,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/arkhe-systems/senddock/pkg/app"
-	"github.com/arkhe-systems/senddock/pkg/config"
+	"github.com/senddock/senddock/pkg/app"
+	"github.com/senddock/senddock/pkg/config"
 )
 
 type slogBridge struct{}

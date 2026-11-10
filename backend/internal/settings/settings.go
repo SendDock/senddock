@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
 
 const (

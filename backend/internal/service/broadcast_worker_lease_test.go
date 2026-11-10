@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
 
 // These tests exercise the broadcast job ownership lease against a real database.

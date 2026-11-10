@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/arkhe-systems/senddock/internal/db"
+	"github.com/senddock/senddock/internal/db"
 )
 
 // withTransaction runs fn inside a single database transaction and commits it only when fn

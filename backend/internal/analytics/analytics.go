@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arkhe-systems/senddock/pkg/auth"
-	"github.com/arkhe-systems/senddock/pkg/segments"
+	"github.com/senddock/senddock/pkg/auth"
+	"github.com/senddock/senddock/pkg/segments"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 )

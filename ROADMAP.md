@@ -6,7 +6,7 @@
 > reset.
 >
 > This file describes **product direction**. Active work and open bugs are tracked in
-> [issues](https://github.com/Arkhe-Systems/senddock/issues), not here.
+> [issues](https://github.com/SendDock/senddock/issues), not here.
 
 ## Phase 1: Core Backend
 - [x] Project structure (Go modules, internal/, cmd/)
@@ -130,42 +130,42 @@ Phases 1–9 above document the foundation that shipped. The list below groups u
 
 Typed subscriber data + the first piece of segmentation, so SendDock stops being "send to everyone" and starts being a real marketing tool.
 
-- [x] Tags + segmentation — [#40](https://github.com/Arkhe-Systems/senddock/issues/40) — Core
-- [x] Custom fields for subscribers — [#72](https://github.com/Arkhe-Systems/senddock/issues/72) — Core
-- [x] Starter template library — [#73](https://github.com/Arkhe-Systems/senddock/issues/73) — Core
+- [x] Tags + segmentation — [#40](https://github.com/SendDock/senddock/issues/40) — Core
+- [x] Custom fields for subscribers — [#72](https://github.com/SendDock/senddock/issues/72) — Core
+- [x] Starter template library — [#73](https://github.com/SendDock/senddock/issues/73) — Core
 
 ### Milestone: Acquisition
 
 Lower the friction of bringing users and existing subscriber lists into the platform.
 
-- [ ] Google OAuth sign-in — [#70](https://github.com/Arkhe-Systems/senddock/issues/70) — Core
-- [ ] Migration wizard (Mailchimp / EmailOctopus / ConvertKit) — [#74](https://github.com/Arkhe-Systems/senddock/issues/74) — Core
-- [ ] Embeddable signup form widget — [#75](https://github.com/Arkhe-Systems/senddock/issues/75) — Core
+- [ ] Google OAuth sign-in — [#70](https://github.com/SendDock/senddock/issues/70) — Core
+- [ ] Migration wizard (Mailchimp / EmailOctopus / ConvertKit) — [#74](https://github.com/SendDock/senddock/issues/74) — Core
+- [ ] Embeddable signup form widget — [#75](https://github.com/SendDock/senddock/issues/75) — Core
 
 ### Milestone: Trust + automation foundation
 
 What teams evaluate before committing their list. Plus the first phase of drips — linear sequences cover most automation demand on their own.
 
-- [ ] Drip automations · Phase 1: linear sequences — [#77](https://github.com/Arkhe-Systems/senddock/issues/77) — Pro
-- [x] DNS deliverability check (SPF / DKIM / DMARC) — [#64](https://github.com/Arkhe-Systems/senddock/issues/64) — Pro — shipped as the Deliverability tab
-- [ ] GDPR / data subject tools — [#46](https://github.com/Arkhe-Systems/senddock/issues/46) — Core
+- [ ] Drip automations · Phase 1: linear sequences — [#77](https://github.com/SendDock/senddock/issues/77) — Pro
+- [x] DNS deliverability check (SPF / DKIM / DMARC) — [#64](https://github.com/SendDock/senddock/issues/64) — Pro — shipped as the Deliverability tab
+- [ ] GDPR / data subject tools — [#46](https://github.com/SendDock/senddock/issues/46) — Core
 
 ### Milestone: Automation parity
 
 Closes the marketing-automation gap with EmailOctopus and Mailchimp.
 
-- [ ] Drip automations · Phase 2: branches, all triggers, goal tracking — [#77](https://github.com/Arkhe-Systems/senddock/issues/77) — Pro
+- [ ] Drip automations · Phase 2: branches, all triggers, goal tracking — [#77](https://github.com/SendDock/senddock/issues/77) — Pro
 - [ ] Polish + bug bash across previously shipped milestones
 
 ### Backlog (no committed milestone)
 
 Picked up as demand surfaces or as bandwidth allows.
 
-- [ ] `senddock-cli` (admin & ops CLI) — [#76](https://github.com/Arkhe-Systems/senddock/issues/76) — Core
-- [ ] Multi-distro support for the one-line installer (Debian, Fedora, RHEL, openSUSE) — [#79](https://github.com/Arkhe-Systems/senddock/issues/79) — Core. Arch shipped in v0.6.8 ([#81](https://github.com/Arkhe-Systems/senddock/issues/81)); macOS tracked separately ([#82](https://github.com/Arkhe-Systems/senddock/issues/82)).
-- [ ] Custom tracking domain / white-label — [#45](https://github.com/Arkhe-Systems/senddock/issues/45) — Pro / Enterprise
-- [ ] Send-time heatmap and recommendation — [#51](https://github.com/Arkhe-Systems/senddock/issues/51) — Pro
-- [ ] Email approval workflow for broadcasts — [#59](https://github.com/Arkhe-Systems/senddock/issues/59) — Team
+- [ ] `senddock-cli` (admin & ops CLI) — [#76](https://github.com/SendDock/senddock/issues/76) — Core
+- [ ] Multi-distro support for the one-line installer (Debian, Fedora, RHEL, openSUSE) — [#79](https://github.com/SendDock/senddock/issues/79) — Core. Arch shipped in v0.6.8 ([#81](https://github.com/SendDock/senddock/issues/81)); macOS tracked separately ([#82](https://github.com/SendDock/senddock/issues/82)).
+- [ ] Custom tracking domain / white-label — [#45](https://github.com/SendDock/senddock/issues/45) — Pro / Enterprise
+- [ ] Send-time heatmap and recommendation — [#51](https://github.com/SendDock/senddock/issues/51) — Pro
+- [ ] Email approval workflow for broadcasts — [#59](https://github.com/SendDock/senddock/issues/59) — Team
 
 ### Deferred (no scheduled milestone)
 
@@ -175,7 +175,7 @@ Captured for visibility, not actively scoped. Will be promoted when there is a c
 - [ ] Admin panel for cloud operators (was Phase 12)
 - [ ] SSO / LDAP integration (was Phase 14) — Enterprise
 - [ ] Internationalization (English + Spanish) (was Phase 14)
-- [ ] Resend campaign to non-openers — [#78](https://github.com/Arkhe-Systems/senddock/issues/78) — Pro
+- [ ] Resend campaign to non-openers — [#78](https://github.com/SendDock/senddock/issues/78) — Pro
 
 ---
 
