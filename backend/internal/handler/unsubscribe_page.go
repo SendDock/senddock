@@ -4,8 +4,8 @@ import (
 	"html"
 	"strings"
 
-	"github.com/arkhe-systems/senddock/internal/richtext"
-	"github.com/arkhe-systems/senddock/internal/service"
+	"github.com/senddock/senddock/internal/richtext"
+	"github.com/senddock/senddock/internal/service"
 )
 
 type unsubPageMode string

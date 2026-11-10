@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/leader"
-	"github.com/arkhe-systems/senddock/internal/metrics"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/leader"
+	"github.com/senddock/senddock/internal/metrics"
 	"github.com/emersion/go-imap/v2"
 	"github.com/emersion/go-imap/v2/imapclient"
 )

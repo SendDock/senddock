@@ -6,7 +6,7 @@ The official SDK wraps the project-scoped REST API in a typed client — no hand
 npm install @senddock/sdk
 ```
 
-Source lives at [Arkhe-Systems/senddock-js](https://github.com/Arkhe-Systems/senddock-js). Zero runtime dependencies, ESM + CJS, Node 18+.
+Source lives at [SendDock/senddock-js](https://github.com/SendDock/senddock-js). Zero runtime dependencies, ESM + CJS, Node 18+.
 
 ::: tip Server-side only
 API keys carry full project access — keep them in your backend (API routes, workers, crons), never in browser code.
@@ -160,4 +160,4 @@ try {
 
 API keys intentionally cover the runtime surface: sending, importing subscribers and stats. Configuration — templates, segments, webhooks, campaigns — is managed from the dashboard, where role-based permissions apply. See [Authentication → Endpoints that accept API keys](./authentication#endpoints-that-accept-api-keys).
 
-Found a gap or a bug? Open an issue on [senddock-js](https://github.com/Arkhe-Systems/senddock-js/issues).
+Found a gap or a bug? Open an issue on [senddock-js](https://github.com/SendDock/senddock-js/issues).

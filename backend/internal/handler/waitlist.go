@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/arkhe-systems/senddock/internal/service"
+	"github.com/senddock/senddock/internal/service"
 )
 
 type WaitlistHandler struct {

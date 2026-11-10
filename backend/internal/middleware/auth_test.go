@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arkhe-systems/senddock/pkg/auth"
+	"github.com/senddock/senddock/pkg/auth"
 	"github.com/golang-jwt/jwt/v5"
 )
 

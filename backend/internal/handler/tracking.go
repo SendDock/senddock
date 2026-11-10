@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/db"
-	"github.com/arkhe-systems/senddock/internal/service"
-	"github.com/arkhe-systems/senddock/internal/webhooks"
+	"github.com/senddock/senddock/internal/db"
+	"github.com/senddock/senddock/internal/service"
+	"github.com/senddock/senddock/internal/webhooks"
 	"github.com/google/uuid"
 	"github.com/sqlc-dev/pqtype"
 )

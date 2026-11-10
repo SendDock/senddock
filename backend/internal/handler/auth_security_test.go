@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/arkhe-systems/senddock/internal/service"
+	"github.com/senddock/senddock/internal/service"
 )
 
 func TestAPIKeyCapabilityAllowlist(t *testing.T) {
